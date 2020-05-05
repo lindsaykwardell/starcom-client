@@ -1,59 +1,188 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-router" target="_blank" rel="noopener">router</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-vuex" target="_blank" rel="noopener">vuex</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+  <div class="flex">
+    <div class="bar">
+      <div class="bar-content flex flex-col">
+        <div class="flex-grow">
+          <button class="p-3 bg-blue-400 w-full" @click="draw(decks.politics)">
+            Draw Politics ({{ decks.politics.remaining }} remaining)
+          </button>
+          <button class="p-3 bg-red-400 w-full" @click="draw(decks.industry)">
+            Draw Industry ({{ decks.industry.remaining }} remaining)
+          </button>
+          <button class="p-3 bg-green-400 w-full" @click="draw(decks.science)">
+            Draw Science ({{ decks.science.remaining }} remaining)
+          </button>
+        </div>
+        <div class="flex-shrink">
+          <Card
+            v-if="hoveredCard && hoveredCard.type && hoveredCard.type.includes('System')"
+            class="horizontal-lg"
+            :card="hoveredCard"
+          />
+          <Card v-else class="lg" :card="hoveredCard" />
+        </div>
+      </div>
+    </div>
+    <div class="flex-grow">
+      <div v-if="showBoard" class="board">
+        <div class="flex justify-around">
+          <System
+            :system="systems[0].card"
+            group="board"
+            :list="systems[0].cards"
+          />
+        </div>
+        <div class="flex justify-around">
+          <System
+            :system="systems[1].card"
+            group="board"
+            :list="systems[1].cards"
+          />
+          <System
+            :system="systems[2].card"
+            group="board"
+            :list="systems[2].cards"
+          />
+        </div>
+        <div class="flex justify-between">
+          <System
+            :system="systems[3].card"
+            group="board"
+            :list="systems[3].cards"
+          />
+          <System
+            :system="systems[4].card"
+            group="board"
+            :list="systems[4].cards"
+          />
+          <System
+            :system="systems[5].card"
+            group="board"
+            :list="systems[5].cards"
+          />
+        </div>
+        <div class="flex justify-around">
+          <System
+            :system="systems[6].card"
+            group="board"
+            :list="systems[6].cards"
+          />
+          <System
+            :system="systems[7].card"
+            group="board"
+            :list="systems[7].cards"
+          />
+        </div>
+        <div class="flex justify-around">
+          <System
+            :system="systems[8].card"
+            group="board"
+            :list="systems[8].cards"
+          />
+        </div>
+      </div>
+      <div class="hand">
+        <DropZone :list="hand" group="board" />
+      </div>
+    </div>
   </div>
 </template>
-
 <script>
+import DropZone from "@/components/DropZone/DropZone";
+import System from "@/components/System/System";
+import Card from "@/components/Card/Card";
+
+import {
+  DECK_POLITICS,
+  DECK_INDUSTRY,
+  DECK_SCIENCE,
+  DECK_SYSTEM,
+} from "@/lib/core-v1";
+import Deck from "@/models/Deck";
+
+import EventBus from "@/util/EventBus";
+
 export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
-  }
-}
+  name: "two-lists",
+  display: "Two Lists",
+  order: 1,
+  components: {
+    DropZone,
+    System,
+    Card,
+  },
+  data() {
+    return {
+      showBoard: false,
+      hoveredCard: {
+        img: "",
+      },
+      systems: [],
+      hand: [],
+      decks: {
+        politics: new Deck(DECK_POLITICS),
+        industry: new Deck(DECK_INDUSTRY),
+        science: new Deck(DECK_SCIENCE),
+        system: new Deck(DECK_SYSTEM),
+      },
+    };
+  },
+  methods: {
+    draw(deck) {
+      this.hand = [...this.hand, deck.draw()];
+    },
+  },
+  mounted() {
+    const systems = [];
+    for (let i = 0; i < 9; i++) {
+      systems.push({
+        card: this.decks.system.draw(),
+        cards: [],
+      });
+    }
+    this.systems = systems;
+    this.showBoard = true;
+
+    EventBus.$on("card:hover", (card) => {
+      this.hoveredCard = card;
+    });
+  },
+};
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
+<style lang="postcss" scoped>
+.board {
+  padding: 1rem;
+  background: linear-gradient(
+      217deg,
+      rgba(0, 0, 0, 0.8),
+      rgba(16, 0, 241, 0) 70.71%
+    ),
+    linear-gradient(127deg, rgba(43, 43, 43, 0.8), rgba(48, 0, 0, 0) 70.71%),
+    linear-gradient(336deg, rgba(21, 21, 48, 0.8), rgba(2, 2, 68, 0) 70.71%);
+  height: calc(100vh - 175px);
+  overflow: hidden;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+
+.bar {
+  width: 300px;
+  position: relative;
+
+  & .bar-content {
+    position: fixed;
+    left: 0;
+    width: 300px;
+    height: 100vh;
+    background: linear-gradient(0.25turn, black, #222);
+  }
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+
+.hand {
+  position: fixed;
+  bottom: 0;
+  width: calc(100% - 300px);
+  height: 175px;
+  overflow-y: scroll;
+  background: black;
 }
 </style>
