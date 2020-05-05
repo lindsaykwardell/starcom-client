@@ -15,7 +15,11 @@
         </div>
         <div class="flex-shrink">
           <Card
-            v-if="hoveredCard && hoveredCard.type && hoveredCard.type.includes('System')"
+            v-if="
+              hoveredCard &&
+                hoveredCard.type &&
+                hoveredCard.type.includes('System')
+            "
             class="horizontal-lg"
             :card="hoveredCard"
           />
@@ -26,63 +30,46 @@
     <div class="flex-grow">
       <div v-if="showBoard" class="board">
         <div class="flex justify-around">
-          <System
-            :system="systems[0].card"
-            group="board"
-            :list="systems[0].cards"
-          />
+          <System :system.sync="systems[0]" group="board" />
         </div>
         <div class="flex justify-around">
-          <System
-            :system="systems[1].card"
-            group="board"
-            :list="systems[1].cards"
-          />
-          <System
-            :system="systems[2].card"
-            group="board"
-            :list="systems[2].cards"
-          />
+          <System :system.sync="systems[1]" group="board" />
+          <System :system.sync="systems[2]" group="board" />
         </div>
         <div class="flex justify-between">
-          <System
-            :system="systems[3].card"
-            group="board"
-            :list="systems[3].cards"
-          />
-          <System
-            :system="systems[4].card"
-            group="board"
-            :list="systems[4].cards"
-          />
-          <System
-            :system="systems[5].card"
-            group="board"
-            :list="systems[5].cards"
-          />
+          <System :system.sync="systems[3]" group="board" />
+          <System :system.sync="systems[4]" group="board" />
+          <System :system.sync="systems[5]" group="board" />
         </div>
         <div class="flex justify-around">
-          <System
-            :system="systems[6].card"
-            group="board"
-            :list="systems[6].cards"
-          />
-          <System
-            :system="systems[7].card"
-            group="board"
-            :list="systems[7].cards"
-          />
+          <System :system.sync="systems[6]" group="board" />
+          <System :system.sync="systems[7]" group="board" />
         </div>
         <div class="flex justify-around">
-          <System
-            :system="systems[8].card"
-            group="board"
-            :list="systems[8].cards"
-          />
+          <System :system.sync="systems[8]" group="board" />
         </div>
       </div>
       <div class="hand">
-        <DropZone :list="hand" group="board" />
+        <DropZone :list.sync="hand" group="board" />
+      </div>
+    </div>
+    <div
+      v-if="showContextMenu && contextCard"
+      v-clickout="onClickout"
+      class="context-menu"
+      :style="contextCoordinates"
+    >
+      <div
+        v-for="option in contextCard.contextMenu"
+        :key="option.action"
+        class=""
+      >
+        <button
+          class="hover:bg-gray-600 p-2"
+          @click="performAction(option.action)"
+        >
+          {{ option.label }}
+        </button>
       </div>
     </div>
   </div>
@@ -91,12 +78,16 @@
 import DropZone from "@/components/DropZone/DropZone";
 import System from "@/components/System/System";
 import Card from "@/components/Card/Card";
+import { clickout } from "vuetensils/src/directives";
+import Vue from "vue";
 
 import {
   DECK_POLITICS,
   DECK_INDUSTRY,
   DECK_SCIENCE,
   DECK_SYSTEM,
+  CARD_LIST,
+  HOMEWORLD,
 } from "@/lib/core-v1";
 import Deck from "@/models/Deck";
 
@@ -113,7 +104,14 @@ export default {
   },
   data() {
     return {
+      nextId: 0,
       showBoard: false,
+      showContextMenu: false,
+      contextCard: null,
+      contextCoordinates: {
+        x: 0,
+        y: 0,
+      },
       hoveredCard: {
         img: "",
       },
@@ -128,15 +126,54 @@ export default {
     };
   },
   methods: {
+    getNextId() {
+      this.nextId = this.nextId + 1;
+      return this.nextId;
+    },
     draw(deck) {
-      this.hand = [...this.hand, deck.draw()];
+      if (this.hand.length < 8) {
+        this.hand = [...this.hand, { ...deck.draw(), id: this.getNextId() }];
+      } else {
+        alert("Too many cards in hand!")
+      }
+    },
+    onClickout() {
+      this.showContextMenu = false;
+    },
+    toggleContextMenu(card, event) {
+      // Opens the context menu on the specified coordinates,
+      this.contextCoordinates = {
+        top: `${event.clientY}px`,
+        left: `${event.clientX}px`,
+      };
+      this.showContextMenu = true;
+      this.contextCard = card;
+    },
+    performAction(action) {
+      const keys = action.split(":");
+      switch (keys[0]) {
+        case "build":
+        default:
+          const card = { ...CARD_LIST.find((c) => c.id == keys[1]) };
+          if (card) {
+            this.systems[this.contextCard.loc].cards = [
+              ...this.systems[this.contextCard.loc].cards,
+              { ...card, id: this.getNextId() },
+            ];
+          }
+      }
+
+      this.showContextMenu = false;
     },
   },
   mounted() {
     const systems = [];
     for (let i = 0; i < 9; i++) {
       systems.push({
-        card: this.decks.system.draw(),
+        card:
+          i === 0 || i === 8
+            ? { ...HOMEWORLD, loc: i }
+            : { ...this.decks.system.draw(), loc: i },
         cards: [],
       });
     }
@@ -146,6 +183,13 @@ export default {
     EventBus.$on("card:hover", (card) => {
       this.hoveredCard = card;
     });
+
+    EventBus.$on("card:context", ({ card, event }) => {
+      this.toggleContextMenu(card, event);
+    });
+  },
+  directives: {
+    clickout,
   },
 };
 </script>
@@ -184,5 +228,11 @@ export default {
   height: 175px;
   overflow-y: scroll;
   background: black;
+}
+
+.context-menu {
+  @apply bg-gray-900 text-white rounded;
+  position: absolute;
+  border: 1px solid white;
 }
 </style>

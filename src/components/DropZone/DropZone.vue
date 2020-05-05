@@ -1,6 +1,6 @@
 <template>
   <draggable
-    :list="list"
+    v-model="_list"
     :group="group"
     ghost-class="ghost"
     chosen-class="chosen"
@@ -37,6 +37,16 @@ export default {
     cardClass: {
       type: String,
       default: ""
+    }
+  },
+  computed: {
+    _list: {
+      get() {
+        return this.list
+      },
+      set(list) {
+        this.$emit("update:list", list)
+      }
     }
   },
   components: {

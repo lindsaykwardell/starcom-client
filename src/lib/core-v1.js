@@ -24,6 +24,13 @@ export const CARD_TYPES = [
   TECHNOLOGY,
 ];
 
+const SYSTEM_CONTEXT_MENU = [
+  {
+    action: "build:28",
+    label: "Build Frigate",
+  },
+];
+
 export const CARD_LIST = [
   {
     id: 1,
@@ -32,6 +39,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 2,
@@ -40,6 +48,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 3,
@@ -48,6 +57,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 4,
@@ -56,6 +66,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SYSTEM,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 5,
@@ -64,6 +75,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 6,
@@ -72,6 +84,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: SYSTEM,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 7,
@@ -80,6 +93,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 8,
@@ -87,6 +101,7 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
+    contextMenu: [],
   },
   {
     id: 9,
@@ -95,6 +110,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SYSTEM,
     count: 1,
+    contextMenu: [],
   },
   {
     id: 10,
@@ -103,6 +119,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 11,
@@ -110,6 +127,7 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
+    contextMenu: [],
   },
   {
     id: 12,
@@ -118,6 +136,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 13,
@@ -126,6 +145,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 4,
+    contextMenu: [],
   },
   {
     id: 14,
@@ -134,6 +154,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 2,
+    contextMenu: [],
   },
   {
     id: 15,
@@ -141,6 +162,7 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
+    contextMenu: [],
   },
   {
     id: 16,
@@ -149,6 +171,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 17,
@@ -156,6 +179,7 @@ export const CARD_LIST = [
     type: STATION,
     domain: null,
     deck: null,
+    contextMenu: [],
   },
   {
     id: 18,
@@ -163,6 +187,7 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
+    contextMenu: [],
   },
   {
     id: 19,
@@ -170,6 +195,7 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
+    contextMenu: [],
   },
   {
     id: 20,
@@ -178,6 +204,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SYSTEM,
     count: 1,
+    contextMenu: [],
   },
   {
     id: 21,
@@ -186,6 +213,7 @@ export const CARD_LIST = [
     domain: null,
     deck: SYSTEM,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 22,
@@ -194,6 +222,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 23,
@@ -202,6 +231,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 4,
+    contextMenu: [],
   },
   {
     id: 24,
@@ -210,6 +240,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 25,
@@ -218,6 +249,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 2,
+    contextMenu: [],
   },
   {
     id: 26,
@@ -226,6 +258,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: SYSTEM,
     count: 1,
+    contextMenu: [],
   },
   {
     id: 27,
@@ -234,6 +267,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 4,
+    contextMenu: [],
   },
   {
     id: 28,
@@ -241,6 +275,7 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
+    contextMenu: [],
   },
   {
     id: 29,
@@ -249,6 +284,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 4,
+    contextMenu: [],
   },
   {
     id: 30,
@@ -256,6 +292,12 @@ export const CARD_LIST = [
     type: START_SYSTEM,
     domain: null,
     deck: null,
+    contextMenu: [
+      {
+        action: "build:28",
+        label: "Build Frigate",
+      },
+    ],
   },
   {
     id: 31,
@@ -264,6 +306,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 2,
+    contextMenu: [],
   },
   {
     id: 32,
@@ -272,6 +315,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 33,
@@ -280,6 +324,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 4,
+    contextMenu: [],
   },
   {
     id: 34,
@@ -288,6 +333,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 35,
@@ -296,6 +342,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 2,
+    contextMenu: [],
   },
   {
     id: 36,
@@ -304,6 +351,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 2,
+    contextMenu: [],
   },
   {
     id: 37,
@@ -312,6 +360,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 2,
+    contextMenu: [],
   },
   {
     id: 38,
@@ -320,6 +369,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 2,
+    contextMenu: [],
   },
   {
     id: 39,
@@ -328,6 +378,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 4,
+    contextMenu: [],
   },
   {
     id: 40,
@@ -336,6 +387,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: SYSTEM,
     count: 2,
+    contextMenu: [],
   },
   {
     id: 41,
@@ -343,6 +395,7 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
+    contextMenu: [],
   },
   {
     id: 42,
@@ -351,6 +404,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 4,
+    contextMenu: [],
   },
   {
     id: 43,
@@ -359,6 +413,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: SYSTEM,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 44,
@@ -367,6 +422,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 45,
@@ -374,6 +430,7 @@ export const CARD_LIST = [
     type: STATION,
     domain: null,
     deck: null,
+    contextMenu: [],
   },
   {
     id: 46,
@@ -382,6 +439,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 2,
+    contextMenu: [],
   },
   {
     id: 47,
@@ -390,6 +448,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: SYSTEM,
     count: 2,
+    contextMenu: [],
   },
   {
     id: 48,
@@ -398,6 +457,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: SYSTEM,
     count: 1,
+    contextMenu: [],
   },
   {
     id: 49,
@@ -406,6 +466,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 4,
+    contextMenu: [],
   },
   {
     id: 50,
@@ -414,6 +475,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 4,
+    contextMenu: [],
   },
   {
     id: 51,
@@ -422,6 +484,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 4,
+    contextMenu: [],
   },
   {
     id: 52,
@@ -430,6 +493,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 4,
+    contextMenu: [],
   },
   {
     id: 53,
@@ -438,6 +502,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SYSTEM,
     count: 2,
+    contextMenu: [],
   },
   {
     id: 54,
@@ -446,6 +511,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 4,
+    contextMenu: [],
   },
   {
     id: 55,
@@ -454,6 +520,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 4,
+    contextMenu: [],
   },
   {
     id: 56,
@@ -462,6 +529,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 2,
+    contextMenu: [],
   },
   {
     id: 57,
@@ -469,6 +537,7 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
+    contextMenu: [],
   },
   {
     id: 58,
@@ -477,6 +546,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: SYSTEM,
     count: 1,
+    contextMenu: [],
   },
   {
     id: 59,
@@ -485,6 +555,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 4,
+    contextMenu: [],
   },
   {
     id: 60,
@@ -492,6 +563,7 @@ export const CARD_LIST = [
     type: FIGHTER,
     domain: null,
     deck: null,
+    contextMenu: [],
   },
   {
     id: 61,
@@ -500,6 +572,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 2,
+    contextMenu: [],
   },
   {
     id: 62,
@@ -508,6 +581,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 3,
+    contextMenu: [],
   },
   {
     id: 63,
@@ -516,6 +590,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 2,
+    contextMenu: [],
   },
   {
     id: 64,
@@ -524,6 +599,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: SYSTEM,
     count: 2,
+    contextMenu: [],
   },
 ];
 
@@ -531,12 +607,14 @@ export const randomCard = () => {
   return CARD_LIST[Math.floor(Math.random() * CARD_LIST.length)];
 };
 
+export const HOMEWORLD = CARD_LIST.find((card) => card.img === "Homeworld");
+
 export const DECK_POLITICS = CARD_LIST.filter(
   (card) => card.deck === POLITICS
 ).reduce((deck, card) => {
   const list = [...deck];
   for (let i = 0; i < card.count; i++) {
-    list.push(card);
+    list.push({ ...card });
   }
   return list;
 }, []);
@@ -546,7 +624,7 @@ export const DECK_INDUSTRY = CARD_LIST.filter(
 ).reduce((deck, card) => {
   const list = [...deck];
   for (let i = 0; i < card.count; i++) {
-    list.push(card);
+    list.push({ ...card });
   }
   return list;
 }, []);
@@ -556,7 +634,7 @@ export const DECK_SCIENCE = CARD_LIST.filter(
 ).reduce((deck, card) => {
   const list = [...deck];
   for (let i = 0; i < card.count; i++) {
-    list.push(card);
+    list.push({ ...card });
   }
   return list;
 }, []);
@@ -566,7 +644,7 @@ export const DECK_SYSTEM = CARD_LIST.filter(
 ).reduce((deck, card) => {
   const list = [...deck];
   for (let i = 0; i < card.count; i++) {
-    list.push(card);
+    list.push({ ...card });
   }
   return list;
 }, []);

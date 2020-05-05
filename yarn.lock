@@ -7575,6 +7575,11 @@ vuedraggable@^2.23.2:
   dependencies:
     sortablejs "^1.10.1"
 
+vuetensils@^0.6.3:
+  version "0.6.3"
+  resolved "https://registry.yarnpkg.com/vuetensils/-/vuetensils-0.6.3.tgz#fe98b02594cc6cad60410eb8d85ce3ba7283f3de"
+  integrity sha512-HMqXcjHfWisiWaVNHwLTmDJKN6Ec+KkXkENtY2dgLaWpWlFsK14wZRd7mfBGb5rjJ0Qw1A5d5hSXvnezoPfviw==
+
 vuex@^3.1.3:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/vuex/-/vuex-3.3.0.tgz#665b4630ea1347317139fcc5cb495aab3ec5e513"

@@ -1,7 +1,12 @@
 <template>
   <div v-if="system" class="flex flex-col justify-center items-center">
-    <Card class="horizontal" :card="system" />
-    <DropZone class="dropzone" cardClass="card sm" :list="cards" :group="group" />
+    <Card class="horizontal" :card="system.card" />
+    <DropZone
+      class="dropzone"
+      cardClass="card sm"
+      :list.sync="list"
+      :group="group"
+    />
   </div>
 </template>
 
@@ -15,18 +20,42 @@ export default {
       type: Object,
       default: null,
     },
-    cards: {
-      type: Array,
-      default: () => [],
-    },
     group: {
       type: String,
       default: "default",
     },
   },
+  computed: {
+    _system: {
+      get() {
+        return this.system;
+      },
+      set(system) {
+        this.$emit("update:system", system);
+      },
+    },
+    list: {
+      get() {
+        return this._system.cards;
+      },
+      set(cards) {
+        this._system = { ...this.system, cards };
+      },
+    },
+  },
+  watch: {
+    system: {
+      deep: true,
+      handler() {},
+    },
+    _system: {
+      deep: true,
+      handler() {},
+    },
+  },
   components: {
     DropZone,
-    Card
+    Card,
   },
 };
 </script>

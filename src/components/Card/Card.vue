@@ -1,9 +1,15 @@
 <template>
-  <img class="card" :src="getImgUrl(card.img)" :alt="card.img" @mouseover="hoverCard" />
+  <img
+    class="card"
+    :src="getImgUrl(card.img)"
+    :alt="card.img"
+    @mouseover="hoverCard"
+    @contextmenu.prevent="openContextMenu($event)"
+  />
 </template>
 
 <script>
-import EventBus from '@/util/EventBus'
+import EventBus from "@/util/EventBus";
 
 export default {
   props: {
@@ -20,12 +26,18 @@ export default {
         var images = require.context("@/assets/cards/", false, /\.png$/);
         return images("./" + cardName + ".png");
       } else {
-        return require("@/assets/back.jpg")
+        return require("@/assets/back.jpg");
       }
     },
     hoverCard() {
-      EventBus.$emit('card:hover', this.card)
-    }
+      EventBus.$emit("card:hover", this.card);
+    },
+    openContextMenu(event) {
+      EventBus.$emit("card:context", {
+        card: this.card,
+        event,
+      });
+    },
   },
 };
 </script>
