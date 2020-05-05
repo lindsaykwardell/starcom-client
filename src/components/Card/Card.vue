@@ -54,7 +54,7 @@ export default {
 
   &.horizontal-lg {
     width: 300px;
-    height: 250px;
+    height: 225px;
   }
 
   &.sm {

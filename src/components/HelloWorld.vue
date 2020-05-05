@@ -65,7 +65,7 @@
         class=""
       >
         <button
-          class="hover:bg-gray-600 p-2"
+          class="hover:bg-gray-600 p-2 w-full text-left"
           @click="performAction(option.action)"
         >
           {{ option.label }}
@@ -134,7 +134,7 @@ export default {
       if (this.hand.length < 8) {
         this.hand = [...this.hand, { ...deck.draw(), id: this.getNextId() }];
       } else {
-        alert("Too many cards in hand!")
+        alert("Too many cards in hand!");
       }
     },
     onClickout() {
@@ -142,6 +142,8 @@ export default {
     },
     toggleContextMenu(card, event) {
       // Opens the context menu on the specified coordinates,
+      console.log(card);
+
       this.contextCoordinates = {
         top: `${event.clientY}px`,
         left: `${event.clientX}px`,
@@ -153,7 +155,6 @@ export default {
       const keys = action.split(":");
       switch (keys[0]) {
         case "build":
-        default:
           const card = { ...CARD_LIST.find((c) => c.id == keys[1]) };
           if (card) {
             this.systems[this.contextCard.loc].cards = [
@@ -161,6 +162,18 @@ export default {
               { ...card, id: this.getNextId() },
             ];
           }
+          break;
+        case "develop":
+          if (
+            this.contextCard.developmentLevel <
+            this.contextCard.maxDevelopmentLevel
+          ) {
+            this.systems[this.contextCard.loc].card.developmentLevel++;
+          }
+
+          break;
+        default:
+        // Do nothing
       }
 
       this.showContextMenu = false;
@@ -197,13 +210,7 @@ export default {
 <style lang="postcss" scoped>
 .board {
   padding: 1rem;
-  background: linear-gradient(
-      217deg,
-      rgba(0, 0, 0, 0.8),
-      rgba(16, 0, 241, 0) 70.71%
-    ),
-    linear-gradient(127deg, rgba(43, 43, 43, 0.8), rgba(48, 0, 0, 0) 70.71%),
-    linear-gradient(336deg, rgba(21, 21, 48, 0.8), rgba(2, 2, 68, 0) 70.71%);
+  background: linear-gradient(rgb(41, 40, 40), rgb(24, 18, 36), rgb(18, 18, 59));
   height: calc(100vh - 175px);
   overflow: hidden;
 }

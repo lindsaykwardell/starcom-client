@@ -26,8 +26,8 @@ export const CARD_TYPES = [
 
 const SYSTEM_CONTEXT_MENU = [
   {
-    action: "build:28",
-    label: "Build Frigate",
+    action: "develop",
+    label: "Build Development",
   },
 ];
 
@@ -66,7 +66,9 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SYSTEM,
     count: 3,
-    contextMenu: [],
+    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    developmentLevel: 0,
+    maxDevelopmentLevel: 4,
   },
   {
     id: 5,
@@ -84,7 +86,9 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: SYSTEM,
     count: 3,
-    contextMenu: [],
+    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    developmentLevel: 0,
+    maxDevelopmentLevel: 1,
   },
   {
     id: 7,
@@ -110,7 +114,9 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SYSTEM,
     count: 1,
-    contextMenu: [],
+    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    developmentLevel: 0,
+    maxDevelopmentLevel: 2,
   },
   {
     id: 10,
@@ -204,7 +210,9 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SYSTEM,
     count: 1,
-    contextMenu: [],
+    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    developmentLevel: 0,
+    maxDevelopmentLevel: 6,
   },
   {
     id: 21,
@@ -214,6 +222,8 @@ export const CARD_LIST = [
     deck: SYSTEM,
     count: 3,
     contextMenu: [],
+    developmentLevel: 0,
+    maxDevelopmentLevel: 0,
   },
   {
     id: 22,
@@ -258,7 +268,9 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: SYSTEM,
     count: 1,
-    contextMenu: [],
+    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    developmentLevel: 0,
+    maxDevelopmentLevel: 6,
   },
   {
     id: 27,
@@ -293,11 +305,14 @@ export const CARD_LIST = [
     domain: null,
     deck: null,
     contextMenu: [
+      ...SYSTEM_CONTEXT_MENU,
       {
         action: "build:28",
         label: "Build Frigate",
       },
     ],
+    developmentLevel: 1,
+    maxDevelopmentLevel: 6,
   },
   {
     id: 31,
@@ -387,7 +402,9 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: SYSTEM,
     count: 2,
-    contextMenu: [],
+    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    developmentLevel: 0,
+    maxDevelopmentLevel: 3,
   },
   {
     id: 41,
@@ -413,7 +430,9 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: SYSTEM,
     count: 3,
-    contextMenu: [],
+    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    developmentLevel: 0,
+    maxDevelopmentLevel: 3,
   },
   {
     id: 44,
@@ -448,7 +467,9 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: SYSTEM,
     count: 2,
-    contextMenu: [],
+    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    developmentLevel: 0,
+    maxDevelopmentLevel: 4,
   },
   {
     id: 48,
@@ -457,7 +478,9 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: SYSTEM,
     count: 1,
-    contextMenu: [],
+    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    developmentLevel: 0,
+    maxDevelopmentLevel: 2,
   },
   {
     id: 49,
@@ -502,7 +525,9 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SYSTEM,
     count: 2,
-    contextMenu: [],
+    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    developmentLevel: 0,
+    maxDevelopmentLevel: 4,
   },
   {
     id: 54,
@@ -546,7 +571,9 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: SYSTEM,
     count: 1,
-    contextMenu: [],
+    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    developmentLevel: 0,
+    maxDevelopmentLevel: 6,
   },
   {
     id: 59,
@@ -599,7 +626,9 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: SYSTEM,
     count: 2,
-    contextMenu: [],
+    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    developmentLevel: 0,
+    maxDevelopmentLevel: 4,
   },
 ];
 

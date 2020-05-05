@@ -1,6 +1,11 @@
 <template>
   <div v-if="system" class="flex flex-col justify-center items-center">
-    <Card class="horizontal" :card="system.card" />
+    <div class="relative">
+      <Card class="horizontal" :card="system.card" />
+      <div v-if="system.card.developmentLevel > 0" class="development-die">
+        <font-awesome size="3x" :icon="['fa', dice]" />
+      </div>
+    </div>
     <DropZone
       class="dropzone"
       cardClass="card sm"
@@ -42,6 +47,23 @@ export default {
         this._system = { ...this.system, cards };
       },
     },
+    dice() {
+      switch (this.system.card.developmentLevel) {
+        case 1:
+          return "dice-one";
+        case 2:
+          return "dice-two";
+        case 3:
+          return "dice-three";
+        case 4:
+          return "dice-four";
+        case 5:
+          return "dice-five";
+        case 6:
+        default:
+          return "dice-six";
+      }
+    },
   },
   watch: {
     system: {
@@ -62,7 +84,16 @@ export default {
 
 <style lang="postcss" scoped>
 .dropzone {
-  height: 20px;
+  height: 25px;
   width: 100%;
+}
+
+.development-die {
+  @apply rounded-full;
+  padding: 5px;
+  background: white;
+  position: absolute;
+  top: 30px;
+  left: 20px;
 }
 </style>

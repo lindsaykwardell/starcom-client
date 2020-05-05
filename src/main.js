@@ -1,14 +1,36 @@
-import Vue from 'vue'
-import App from './App.vue'
-import router from './router'
-import store from './store'
+import Vue from "vue";
+import App from "./App.vue";
+import router from "./router";
+import store from "./store";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import {
+  faDiceOne,
+  faDiceTwo,
+  faDiceThree,
+  faDiceFour,
+  faDiceFive,
+  faDiceSix,
+} from "@fortawesome/free-solid-svg-icons";
 
-import '@/assets/styles/index.postcss'
+import "@/assets/styles/index.postcss";
+import "@fortawesome/fontawesome-svg-core/styles.css";
 
-Vue.config.productionTip = false
+library.add(
+  faDiceOne,
+  faDiceTwo,
+  faDiceThree,
+  faDiceFour,
+  faDiceFive,
+  faDiceSix
+);
+
+Vue.config.productionTip = false;
+
+Vue.component("font-awesome", FontAwesomeIcon);
 
 new Vue({
   router,
   store,
-  render: h => h(App)
-}).$mount('#app')
+  render: (h) => h(App),
+}).$mount("#app");
