@@ -79,6 +79,11 @@ export default {
     height: 50px;
   }
 
+  &.md {
+    width: 200px;
+    height: 275px;
+  }
+
   &.lg {
     width: 300px;
     height: 425px;

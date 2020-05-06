@@ -30,6 +30,17 @@ export const DAMAGEABLE = [
   STATION
 ]
 
+export const HAND_CONTEXT_MENU = [
+  {
+    action: "hand:discard",
+    label: "Discard Card"
+  },
+  {
+    action: "hand:play",
+    label: "Play Card"
+  }
+]
+
 const SYSTEM_CONTEXT_MENU = [
   {
     action: "develop",

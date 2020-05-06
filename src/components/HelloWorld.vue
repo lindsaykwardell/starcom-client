@@ -12,6 +12,16 @@
           <button class="p-3 bg-green-400 w-full" @click="draw(decks.science)">
             Draw Science ({{ decks.science.remaining }} remaining)
           </button>
+          <h2 class="text-white">Discard</h2>
+          <Dialog :show="showDiscard" @toggle="toggleDiscard">
+            <Card
+              v-for="card in discard"
+              :key="card.id"
+              :card="card"
+              class="inline lg"
+            />
+          </Dialog>
+          <Card :card="discard[0]" class="md m-auto" />
         </div>
         <div class="flex-shrink relative">
           <Card
@@ -24,11 +34,15 @@
             :card="hoveredCard"
           />
           <Card v-else class="lg" :card="hoveredCard" />
-          <DamageDice v-if="hoveredCard.damage" :damage="hoveredCard.damage" size="3x" />
+          <DamageDice
+            v-if="hoveredCard.damage"
+            :damage="hoveredCard.damage"
+            size="3x"
+          />
         </div>
       </div>
     </div>
-    <div class="flex-grow">
+    <div class="flex-grow bg-black h-screen">
       <div v-if="showBoard" class="board">
         <div class="flex justify-around">
           <System :system.sync="systems[0]" group="board" />
@@ -50,8 +64,8 @@
           <System :system.sync="systems[8]" group="board" />
         </div>
       </div>
-      <div class="hand">
-        <DropZone :list.sync="hand" group="board" />
+      <div class="hand" v-if="showBoard">
+        <DropZone :list.sync="hand" group="hand" />
       </div>
     </div>
     <div
@@ -80,6 +94,7 @@ import DropZone from "@/components/DropZone/DropZone";
 import System from "@/components/System/System";
 import Card from "@/components/Card/Card";
 import DamageDice from "@/components/Dice/DamageDice";
+import Dialog from "@/components/Dialog/Dialog";
 import { clickout } from "vuetensils/src/directives";
 import Vue from "vue";
 
@@ -90,6 +105,7 @@ import {
   DECK_SYSTEM,
   CARD_LIST,
   HOMEWORLD,
+  HAND_CONTEXT_MENU,
 } from "@/lib/core-v1";
 import Deck from "@/models/Deck";
 
@@ -103,6 +119,7 @@ export default {
     return {
       nextId: 0,
       showBoard: false,
+      showDiscard: false,
       showContextMenu: false,
       contextCard: null,
       contextCoordinates: {
@@ -114,6 +131,7 @@ export default {
       },
       systems: [],
       hand: [],
+      discard: [],
       decks: {
         politics: new Deck(DECK_POLITICS),
         industry: new Deck(DECK_INDUSTRY),
@@ -123,13 +141,28 @@ export default {
     };
   },
   methods: {
+    toggleDiscard(val) {
+      this.showDiscard = val;
+      this.showBoard = !val;
+    },
     getNextId() {
       this.nextId = this.nextId + 1;
       return this.nextId;
     },
     draw(deck) {
       if (this.hand.length < 8) {
-        this.hand = [...this.hand, { ...deck.draw(), id: this.getNextId() }];
+        const nextCard = deck.draw();
+        this.hand = [
+          ...this.hand,
+          {
+            ...nextCard,
+            id: this.getNextId(),
+            contextMenu: [
+              //...nextCard.contextMenu,
+              ...HAND_CONTEXT_MENU,
+            ],
+          },
+        ];
       } else {
         alert("Too many cards in hand!");
       }
@@ -139,7 +172,6 @@ export default {
     },
     toggleContextMenu(card, event) {
       // Opens the context menu on the specified coordinates,
-      console.log(card);
 
       this.contextCoordinates = {
         top: `${event.clientY}px`,
@@ -170,15 +202,30 @@ export default {
 
           break;
         case "damage":
-          this.contextCard.damage = this.contextCard.damage + parseInt(keys[1], 10);
+          this.contextCard.damage =
+            this.contextCard.damage + parseInt(keys[1], 10);
           break;
         case "repair":
-          this.contextCard.damage = this.contextCard.damage - parseInt(keys[1], 10);
+          this.contextCard.damage =
+            this.contextCard.damage - parseInt(keys[1], 10);
           break;
         case "destroy":
-          this.systems.forEach(system => {
-            system.cards = system.cards.filter(card => card.id !== this.contextCard.id)
-          })
+          this.systems.forEach((system) => {
+            system.cards = system.cards.filter(
+              (card) => card.id !== this.contextCard.id
+            );
+          });
+          break;
+        case "hand":
+          switch (keys[1]) {
+            case "discard":
+              this.discard = [this.contextCard, ...this.discard];
+
+              this.hand = this.hand.filter(
+                (card) => card.id !== this.contextCard.id
+              );
+              break;
+          }
           break;
         default:
         // Do nothing
@@ -202,7 +249,7 @@ export default {
     this.showBoard = true;
 
     EventBus.$on("card:hover", (card) => {
-      this.hoveredCard = card;
+      if (!this.showDiscard) this.hoveredCard = card;
     });
 
     EventBus.$on("card:context", ({ card, event }) => {
@@ -214,6 +261,7 @@ export default {
     System,
     Card,
     DamageDice,
+    Dialog,
   },
   directives: {
     clickout,
@@ -251,7 +299,7 @@ export default {
   bottom: 0;
   width: calc(100% - 300px);
   height: 175px;
-  overflow-y: scroll;
+  /* overflow-y: scroll; */
   background: black;
 }
 
