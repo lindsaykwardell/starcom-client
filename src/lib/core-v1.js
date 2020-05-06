@@ -35,7 +35,7 @@ export const CARD_LIST = [
   {
     id: 1,
     img: "Advanced_Fighters",
-    type: SHIP,
+    type: TECHNOLOGY,
     domain: POLITICS,
     deck: POLITICS,
     count: 3,
@@ -307,8 +307,32 @@ export const CARD_LIST = [
     contextMenu: [
       ...SYSTEM_CONTEXT_MENU,
       {
+        action: "build:15",
+        label: "Build Corvette",
+      },
+      {
+        action: "build:18",
+        label: "Build Destroyer",
+      },
+      {
         action: "build:28",
         label: "Build Frigate",
+      },
+      {
+        action: "build:8",
+        label: "Build Battlecruiser",
+      },
+      {
+        action: "build:41",
+        label: "Build Missile Cruiser",
+      },
+      {
+        action: "build:11",
+        label: "Build Carrier",
+      },
+      {
+        action: "build:19",
+        label: "Build Dreadnought",
       },
     ],
     developmentLevel: 1,
