@@ -12,8 +12,16 @@
           <button class="p-3 bg-green-400 w-full" @click="draw(decks.science)">
             Draw Science ({{ decks.science.remaining }} remaining)
           </button>
-          <h2 class="text-white">Discard</h2>
           <Dialog :show="showDiscard" @toggle="toggleDiscard">
+            <template v-slot:button
+              ><h4 class="text-white">
+                Discard ({{ discard.length }})
+              </h4></template
+            >
+            <template v-slot:header>All Discarded Cards</template>
+            <p v-if="discard.length <= 0">
+              No cards have been placed in discard yet.
+            </p>
             <Card
               v-for="card in discard"
               :key="card.id"
@@ -21,7 +29,23 @@
               class="inline lg"
             />
           </Dialog>
-          <Card :card="discard[0]" class="md m-auto" />
+          <Card :card="discard[0]" class="m-auto" />
+          <Dialog :show="showStack" @toggle="toggleStack">
+            <template v-slot:button
+              ><h4 class="text-white">
+                Current Actions ({{ stack.length }})
+              </h4></template
+            >
+            <template v-slot:header>All Cards to Resolve</template>
+            <p v-if="stack.length <= 0">No cards have been played yet.</p>
+            <Card
+              v-for="card in stack"
+              :key="card.id"
+              :card="card"
+              class="inline lg"
+            />
+          </Dialog>
+          <Card :card="stack[0]" class="md m-auto" />
         </div>
         <div class="flex-shrink relative">
           <Card
@@ -43,7 +67,7 @@
       </div>
     </div>
     <div class="flex-grow bg-black h-screen">
-      <div v-if="showBoard" class="board">
+      <div v-if="shouldBoardDisplay" class="board">
         <div class="flex justify-around">
           <System :system.sync="systems[0]" group="board" />
         </div>
@@ -64,7 +88,7 @@
           <System :system.sync="systems[8]" group="board" />
         </div>
       </div>
-      <div class="hand" v-if="showBoard">
+      <div class="hand" v-if="shouldBoardDisplay">
         <DropZone :list.sync="hand" group="hand" />
       </div>
     </div>
@@ -80,6 +104,7 @@
         class=""
       >
         <button
+          v-if="!option.condition || option.condition({card: contextCard})"
           class="hover:bg-gray-600 p-2 w-full text-left"
           @click="performAction(option.action)"
         >
@@ -106,6 +131,9 @@ import {
   CARD_LIST,
   HOMEWORLD,
   HAND_CONTEXT_MENU,
+  DISCARD_CONTEXT_MENU,
+  DAMAGE_CONTEXT_MENU,
+  generateResolveContextMenu,
 } from "@/lib/core-v1";
 import Deck from "@/models/Deck";
 
@@ -120,8 +148,10 @@ export default {
       nextId: 0,
       showBoard: false,
       showDiscard: false,
+      showStack: false,
       showContextMenu: false,
       contextCard: null,
+      contextLoc: 0,
       contextCoordinates: {
         x: 0,
         y: 0,
@@ -132,6 +162,7 @@ export default {
       systems: [],
       hand: [],
       discard: [],
+      stack: [],
       decks: {
         politics: new Deck(DECK_POLITICS),
         industry: new Deck(DECK_INDUSTRY),
@@ -140,9 +171,18 @@ export default {
       },
     };
   },
+  computed: {
+    shouldBoardDisplay() {
+      return this.showBoard && !this.showDiscard && !this.showStack;
+    },
+  },
   methods: {
     toggleDiscard(val) {
       this.showDiscard = val;
+      this.showBoard = !val;
+    },
+    toggleStack(val) {
+      this.showStack = val;
       this.showBoard = !val;
     },
     getNextId() {
@@ -170,7 +210,7 @@ export default {
     onClickout() {
       this.showContextMenu = false;
     },
-    toggleContextMenu(card, event) {
+    toggleContextMenu(card, loc, event) {
       // Opens the context menu on the specified coordinates,
 
       this.contextCoordinates = {
@@ -179,25 +219,37 @@ export default {
       };
       this.showContextMenu = true;
       this.contextCard = card;
+      this.contextLoc = loc
     },
     performAction(action) {
       const keys = action.split(":");
       switch (keys[0]) {
         case "build":
+          console.log(this.contextLoc);
           const card = { ...CARD_LIST.find((c) => c.id == keys[1]) };
           if (card) {
-            this.systems[this.contextCard.loc].cards = [
-              ...this.systems[this.contextCard.loc].cards,
+            this.systems[this.contextLoc].cards = [
+              ...this.systems[this.contextLoc].cards,
               { ...card, id: this.getNextId() },
             ];
           }
+          break;
+        case "build-in":
+          this.systems[keys[1]].cards = [
+            ...this.systems[keys[1]].cards,
+            { ...this.contextCard, contextMenu: [...DAMAGE_CONTEXT_MENU] },
+          ];
+
+          this.stack = this.stack.filter(
+            (card) => card.id !== this.contextCard.id
+          );
           break;
         case "develop":
           if (
             this.contextCard.developmentLevel <
             this.contextCard.maxDevelopmentLevel
           ) {
-            this.systems[this.contextCard.loc].card.developmentLevel++;
+            this.systems[this.contextLoc].card.developmentLevel++;
           }
 
           break;
@@ -210,6 +262,15 @@ export default {
             this.contextCard.damage - parseInt(keys[1], 10);
           break;
         case "destroy":
+          this.discard = [
+            {
+              ...this.contextCard,
+              contextMenu: [...DISCARD_CONTEXT_MENU],
+              damage: 0,
+            },
+            ...this.discard,
+          ];
+
           this.systems.forEach((system) => {
             system.cards = system.cards.filter(
               (card) => card.id !== this.contextCard.id
@@ -218,13 +279,54 @@ export default {
           break;
         case "hand":
           switch (keys[1]) {
-            case "discard":
-              this.discard = [this.contextCard, ...this.discard];
+            case "play":
+              this.stack = [
+                {
+                  ...this.contextCard,
+                  contextMenu: generateResolveContextMenu(
+                    this.systems,
+                    this.contextCard
+                  ),
+                },
+                ...this.stack,
+              ];
 
               this.hand = this.hand.filter(
                 (card) => card.id !== this.contextCard.id
               );
               break;
+            case "discard":
+              this.discard = [
+                { ...this.contextCard, contextMenu: [...DISCARD_CONTEXT_MENU] },
+                ...this.discard,
+              ];
+
+              this.hand = this.hand.filter(
+                (card) => card.id !== this.contextCard.id
+              );
+              break;
+            case "return":
+              this.hand = [
+                ...this.hand,
+                { ...this.contextCard, contextMenu: [...HAND_CONTEXT_MENU] },
+              ];
+
+              this.discard = this.discard.filter(
+                (card) => card.id !== this.contextCard.id
+              );
+              this.stack = this.stack.filter(
+                (card) => card.id !== this.contextCard.id
+              );
+              break;
+            case "resolve":
+              this.discard = [
+                { ...this.contextCard, contextMenu: [...DISCARD_CONTEXT_MENU] },
+                ...this.discard,
+              ];
+
+              this.stack = this.stack.filter(
+                (card) => card.id !== this.contextCard.id
+              );
           }
           break;
         default:
@@ -252,8 +354,8 @@ export default {
       if (!this.showDiscard) this.hoveredCard = card;
     });
 
-    EventBus.$on("card:context", ({ card, event }) => {
-      this.toggleContextMenu(card, event);
+    EventBus.$on("card:context", ({ card, loc, event }) => {
+      this.toggleContextMenu(card, loc, event);
     });
   },
   components: {

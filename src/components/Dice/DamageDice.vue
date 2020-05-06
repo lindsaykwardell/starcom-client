@@ -24,7 +24,7 @@ export default {
     },
     size: {
       type: String,
-      default: "",
+      default: "sm",
     },
     showNumber: {
       type: Boolean,

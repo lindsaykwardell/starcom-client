@@ -22,6 +22,10 @@ export default {
         img: "",
       }),
     },
+    loc: {
+      type: Number,
+      default: 0
+    }
   },
   methods: {
     getImgUrl(cardName) {
@@ -38,6 +42,7 @@ export default {
     openContextMenu(event) {
       EventBus.$emit("card:context", {
         card: this.card,
+        loc: this.card.loc || this.loc,
         event,
       });
     },

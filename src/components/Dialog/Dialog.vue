@@ -1,5 +1,5 @@
 <template>
-  <VDialog v-model="dialog" bg-transition="fade" class="my-dialog" :classes="{ content: dialogClass }">
+  <VDialog v-model="dialog" bg-transition="fade" class="my-dialog text-white" :classes="{ content: dialogClass }">
     <template v-if="!hideButton" #toggle="{ on, attrs }">
       <button v-on="on" v-bind="attrs" :class="buttonClass">
         <slot name="button">Show the dialog</slot>
@@ -14,7 +14,7 @@
         <button
           @click="close"
           aria-label="close"
-          class="text-3xl px-3 hover:text-gray-600"
+          class="text-3xl px-3 text-gray-900 hover:text-gray-600"
         >
           &times;
         </button>

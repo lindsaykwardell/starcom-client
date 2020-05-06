@@ -14,7 +14,7 @@
     >
       &nbsp;
       <div class="relative">
-        <Card :class="cardClass" :card="element" />
+        <Card :class="cardClass" :card="element" :loc="loc" />
         <DamageDice v-if="element.damage" :damage="element.damage" :showNumber="cardClass.includes('xs')" />
       </div>
     </div>
@@ -41,6 +41,10 @@ export default {
     cardClass: {
       type: String,
       default: ""
+    },
+    loc: {
+      type: Number,
+      default: 0
     }
   },
   computed: {

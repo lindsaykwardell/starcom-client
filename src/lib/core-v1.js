@@ -24,22 +24,39 @@ export const CARD_TYPES = [
   TECHNOLOGY,
 ];
 
-export const DAMAGEABLE = [
-  SHIP,
-  FIGHTER,
-  STATION
-]
+export const DAMAGEABLE = [SHIP, FIGHTER, STATION];
 
 export const HAND_CONTEXT_MENU = [
   {
     action: "hand:discard",
-    label: "Discard Card"
+    label: "Discard Card",
   },
   {
     action: "hand:play",
-    label: "Play Card"
-  }
-]
+    label: "Play Card",
+  },
+];
+
+export const DISCARD_CONTEXT_MENU = [
+  {
+    action: "hand:return",
+    label: "Return to Hand",
+  },
+];
+
+export const RESOLVE_CONTEXT_MENU = [
+  {
+    action: "hand:resolve",
+    label: "Resolve Card",
+  },
+];
+
+export const RETURN_TO_HAND_CONTEXT_MENU = [
+  {
+    action: "hand:return",
+    label: "Return to Hand",
+  },
+];
 
 const SYSTEM_CONTEXT_MENU = [
   {
@@ -48,28 +65,51 @@ const SYSTEM_CONTEXT_MENU = [
   },
 ];
 
-const DAMAGE_CONTEXT_MENU = [
+export const DAMAGE_CONTEXT_MENU = [
   {
     action: "damage:1",
-    label: "Add 1 damage"
+    label: "Add 1 damage",
   },
   {
     action: "damage:2",
-    label: "Add 2 damage"
+    label: "Add 2 damage",
   },
   {
     action: "damage:3",
-    label: "Add 3 damage"
+    label: "Add 3 damage",
   },
   {
     action: "repair:1",
-    label: "Repair 1 damage"
+    label: "Repair 1 damage",
+    condition: ({card}) => card.damage > 0,
   },
   {
     action: "destroy",
-    label: "Destroy this"
+    label: "Destroy this",
+  },
+];
+
+export const BUILD_FIGHTER_CONTEXT_MENU = [
+  {
+    action: "build:60",
+    label: "Build Strike Fighter",
+  },
+];
+
+export const generateResolveContextMenu = (systems, card) => {
+  const menu = [...RETURN_TO_HAND_CONTEXT_MENU];
+  if (DAMAGEABLE.includes(card.type)) {
+    systems.forEach((system, index) => {
+      menu.push({
+        action: `build-in:${index}`,
+        label: `Build in ${system.card.img} (${index})`,
+      });
+    });
+  } else {
+    RESOLVE_CONTEXT_MENU.forEach((item) => menu.push(item));
   }
-]
+  return menu;
+};
 
 export const CARD_LIST = [
   {
@@ -175,7 +215,7 @@ export const CARD_LIST = [
     domain: null,
     deck: null,
     damage: 0,
-    contextMenu: [...DAMAGE_CONTEXT_MENU],
+    contextMenu: [...DAMAGE_CONTEXT_MENU, ...BUILD_FIGHTER_CONTEXT_MENU],
   },
   {
     id: 12,
@@ -381,6 +421,14 @@ export const CARD_LIST = [
         action: "build:19",
         label: "Build Dreadnought",
       },
+      {
+        action: "build:17",
+        label: "Build Defense Station",
+      },
+      {
+        action: "build:45",
+        label: "Build Orbital Hangar",
+      },
     ],
     developmentLevel: 1,
     maxDevelopmentLevel: 6,
@@ -473,7 +521,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: SYSTEM,
     count: 2,
-    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    contextMenu: [...SYSTEM_CONTEXT_MENU, ...BUILD_FIGHTER_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 3,
   },
@@ -524,7 +572,7 @@ export const CARD_LIST = [
     domain: null,
     deck: null,
     damage: 0,
-    contextMenu: [...DAMAGE_CONTEXT_MENU],
+    contextMenu: [...BUILD_FIGHTER_CONTEXT_MENU,...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 46,

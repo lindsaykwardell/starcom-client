@@ -11,6 +11,7 @@
       :cardClass="list.length > 5 ? 'xs' : 'sm'"
       :list.sync="list"
       :group="group"
+      :loc="system.card.loc"
     />
   </div>
 </template>
@@ -41,7 +42,7 @@ export default {
     },
     list: {
       get() {
-        return this._system.cards;
+        return this.system.cards
       },
       set(cards) {
         this._system = { ...this.system, cards };
