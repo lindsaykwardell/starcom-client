@@ -175,6 +175,11 @@ export default {
         case "repair":
           this.contextCard.damage = this.contextCard.damage - parseInt(keys[1], 10);
           break;
+        case "destroy":
+          this.systems.forEach(system => {
+            system.cards = system.cards.filter(card => card.id !== this.contextCard.id)
+          })
+          break;
         default:
         // Do nothing
       }

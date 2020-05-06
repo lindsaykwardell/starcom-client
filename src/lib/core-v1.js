@@ -53,6 +53,10 @@ const DAMAGE_CONTEXT_MENU = [
   {
     action: "repair:1",
     label: "Repair 1 damage"
+  },
+  {
+    action: "destroy",
+    label: "Destroy this"
   }
 ]
 
