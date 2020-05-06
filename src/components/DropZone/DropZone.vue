@@ -13,7 +13,10 @@
       :key="element.id"
     >
       &nbsp;
-      <Card :class="cardClass" :card="element" />
+      <div class="relative">
+        <Card :class="cardClass" :card="element" />
+        <DamageDice v-if="element.damage" :damage="element.damage" :showNumber="cardClass.includes('xs')" />
+      </div>
     </div>
   </draggable>
 </template>
@@ -21,6 +24,7 @@
 <script>
 import draggable from "vuedraggable";
 import Card from '@/components/Card/Card'
+import DamageDice from '@/components/Dice/DamageDice'
 
 export default {
   name: "dropzone",
@@ -51,7 +55,8 @@ export default {
   },
   components: {
     draggable,
-    Card
+    Card,
+    DamageDice
   },
 };
 </script>

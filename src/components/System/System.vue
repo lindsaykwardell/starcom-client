@@ -8,7 +8,7 @@
     </div>
     <DropZone
       class="dropzone"
-      cardClass="card sm"
+      :cardClass="list.length > 5 ? 'xs' : 'sm'"
       :list.sync="list"
       :group="group"
     />

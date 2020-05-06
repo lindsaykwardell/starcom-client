@@ -5,11 +5,14 @@
     :alt="card.img"
     @mouseover="hoverCard"
     @contextmenu.prevent="openContextMenu($event)"
+    :data-damage="card.damage"
+    :title="title"
   />
 </template>
 
 <script>
 import EventBus from "@/util/EventBus";
+import { DAMAGEABLE } from '@/lib/core-v1'
 
 export default {
   props: {
@@ -39,6 +42,15 @@ export default {
       });
     },
   },
+  computed: {
+    title() {
+      if (DAMAGEABLE.includes(this.card.type)) {
+        return `Damage: ${this.card.damage}`
+      }
+
+      return "";
+    }
+  }
 };
 </script>
 
@@ -60,6 +72,11 @@ export default {
   &.sm {
     width: 75px;
     height: 105px;
+  }
+
+  &.xs {
+    width: 30px;
+    height: 50px;
   }
 
   &.lg {

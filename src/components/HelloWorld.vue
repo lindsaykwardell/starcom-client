@@ -13,7 +13,7 @@
             Draw Science ({{ decks.science.remaining }} remaining)
           </button>
         </div>
-        <div class="flex-shrink">
+        <div class="flex-shrink relative">
           <Card
             v-if="
               hoveredCard &&
@@ -24,6 +24,7 @@
             :card="hoveredCard"
           />
           <Card v-else class="lg" :card="hoveredCard" />
+          <DamageDice v-if="hoveredCard.damage" :damage="hoveredCard.damage" size="3x" />
         </div>
       </div>
     </div>
@@ -78,6 +79,7 @@
 import DropZone from "@/components/DropZone/DropZone";
 import System from "@/components/System/System";
 import Card from "@/components/Card/Card";
+import DamageDice from "@/components/Dice/DamageDice";
 import { clickout } from "vuetensils/src/directives";
 import Vue from "vue";
 
@@ -97,11 +99,6 @@ export default {
   name: "two-lists",
   display: "Two Lists",
   order: 1,
-  components: {
-    DropZone,
-    System,
-    Card,
-  },
   data() {
     return {
       nextId: 0,
@@ -172,6 +169,12 @@ export default {
           }
 
           break;
+        case "damage":
+          this.contextCard.damage = this.contextCard.damage + parseInt(keys[1], 10);
+          break;
+        case "repair":
+          this.contextCard.damage = this.contextCard.damage - parseInt(keys[1], 10);
+          break;
         default:
         // Do nothing
       }
@@ -201,6 +204,12 @@ export default {
       this.toggleContextMenu(card, event);
     });
   },
+  components: {
+    DropZone,
+    System,
+    Card,
+    DamageDice,
+  },
   directives: {
     clickout,
   },
@@ -210,7 +219,11 @@ export default {
 <style lang="postcss" scoped>
 .board {
   padding: 1rem;
-  background: linear-gradient(rgb(41, 40, 40), rgb(24, 18, 36), rgb(18, 18, 59));
+  background: linear-gradient(
+    rgb(41, 40, 40),
+    rgb(24, 18, 36),
+    rgb(18, 18, 59)
+  );
   height: calc(100vh - 175px);
   overflow: hidden;
 }

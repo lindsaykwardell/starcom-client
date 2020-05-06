@@ -24,12 +24,37 @@ export const CARD_TYPES = [
   TECHNOLOGY,
 ];
 
+export const DAMAGEABLE = [
+  SHIP,
+  FIGHTER,
+  STATION
+]
+
 const SYSTEM_CONTEXT_MENU = [
   {
     action: "develop",
     label: "Build Development",
   },
 ];
+
+const DAMAGE_CONTEXT_MENU = [
+  {
+    action: "damage:1",
+    label: "Add 1 damage"
+  },
+  {
+    action: "damage:2",
+    label: "Add 2 damage"
+  },
+  {
+    action: "damage:3",
+    label: "Add 3 damage"
+  },
+  {
+    action: "repair:1",
+    label: "Repair 1 damage"
+  }
+]
 
 export const CARD_LIST = [
   {
@@ -105,7 +130,8 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
-    contextMenu: [],
+    damage: 0,
+    contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 9,
@@ -133,7 +159,8 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
-    contextMenu: [],
+    damage: 0,
+    contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 12,
@@ -168,7 +195,8 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
-    contextMenu: [],
+    damage: 0,
+    contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 16,
@@ -185,7 +213,8 @@ export const CARD_LIST = [
     type: STATION,
     domain: null,
     deck: null,
-    contextMenu: [],
+    damage: 0,
+    contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 18,
@@ -193,7 +222,8 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
-    contextMenu: [],
+    damage: 0,
+    contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 19,
@@ -201,7 +231,8 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
-    contextMenu: [],
+    damage: 0,
+    contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 20,
@@ -287,7 +318,8 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
-    contextMenu: [],
+    damage: 0,
+    contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 29,
@@ -436,7 +468,8 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
-    contextMenu: [],
+    damage: 0,
+    contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 42,
@@ -445,7 +478,8 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 4,
-    contextMenu: [],
+    damage: 0,
+    contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 43,
@@ -465,7 +499,8 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 3,
-    contextMenu: [],
+    damage: 0,
+    contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 45,
@@ -473,7 +508,8 @@ export const CARD_LIST = [
     type: STATION,
     domain: null,
     deck: null,
-    contextMenu: [],
+    damage: 0,
+    contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 46,
@@ -531,7 +567,8 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 4,
-    contextMenu: [],
+    damage: 0,
+    contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 52,
@@ -586,7 +623,8 @@ export const CARD_LIST = [
     type: SHIP,
     domain: null,
     deck: null,
-    contextMenu: [],
+    damage: 0,
+    contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 58,
@@ -614,7 +652,8 @@ export const CARD_LIST = [
     type: FIGHTER,
     domain: null,
     deck: null,
-    contextMenu: [],
+    damage: 0,
+    contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 61,
