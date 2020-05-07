@@ -62,6 +62,9 @@ const SYSTEM_CONTEXT_MENU = [
   {
     action: "develop",
     label: "Build Development",
+    condition: ({ card, system, activePlayer }) =>
+      card.controlledBy === activePlayer ||
+      (!card.controlledBy && system[activePlayer].length > 0),
   },
 ];
 
@@ -81,7 +84,7 @@ export const DAMAGE_CONTEXT_MENU = [
   {
     action: "repair:1",
     label: "Repair 1 damage",
-    condition: ({card}) => card.damage > 0,
+    condition: ({ card }) => card.damage > 0,
   },
   {
     action: "destroy",
@@ -396,38 +399,56 @@ export const CARD_LIST = [
       {
         action: "build:15",
         label: "Build Corvette",
+        condition: ({ card, system, activePlayer, players }) =>
+          card.controlledBy === activePlayer && players[activePlayer].credits >= 2,
       },
       {
         action: "build:18",
         label: "Build Destroyer",
+        condition: ({ card, system, activePlayer, players }) =>
+          card.controlledBy === activePlayer && players[activePlayer].credits >= 3,
       },
       {
         action: "build:28",
         label: "Build Frigate",
+        condition: ({ card, system, activePlayer, players }) =>
+          card.controlledBy === activePlayer && players[activePlayer].credits >= 2,
       },
       {
         action: "build:8",
         label: "Build Battlecruiser",
+        condition: ({ card, system, activePlayer, players }) =>
+          card.controlledBy === activePlayer && players[activePlayer].credits >= 6,
       },
       {
         action: "build:41",
         label: "Build Missile Cruiser",
+        condition: ({ card, system, activePlayer, players }) =>
+          card.controlledBy === activePlayer && players[activePlayer].credits >= 6,
       },
       {
         action: "build:11",
         label: "Build Carrier",
+        condition: ({ card, system, activePlayer, players }) =>
+          card.controlledBy === activePlayer && players[activePlayer].credits >= 8,
       },
       {
         action: "build:19",
         label: "Build Dreadnought",
+        condition: ({ card, system, activePlayer, players }) =>
+          card.controlledBy === activePlayer && players[activePlayer].credits >= 8,
       },
       {
         action: "build:17",
         label: "Build Defense Station",
+        condition: ({ card, system, activePlayer, players }) =>
+          card.controlledBy === activePlayer && players[activePlayer].credits >= 2,
       },
       {
         action: "build:45",
         label: "Build Orbital Hangar",
+        condition: ({ card, system, activePlayer, players }) =>
+          card.controlledBy === activePlayer && players[activePlayer].credits >= 3,
       },
     ],
     developmentLevel: 1,
@@ -572,7 +593,7 @@ export const CARD_LIST = [
     domain: null,
     deck: null,
     damage: 0,
-    contextMenu: [...BUILD_FIGHTER_CONTEXT_MENU,...DAMAGE_CONTEXT_MENU],
+    contextMenu: [...BUILD_FIGHTER_CONTEXT_MENU, ...DAMAGE_CONTEXT_MENU],
   },
   {
     id: 46,
@@ -803,3 +824,5 @@ export const DECK_SYSTEM = CARD_LIST.filter(
   }
   return list;
 }, []);
+
+export const SCOUT = CARD_LIST.find(card => card.id === 57)

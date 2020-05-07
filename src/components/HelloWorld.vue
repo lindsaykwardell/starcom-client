@@ -3,20 +3,32 @@
     <div class="bar">
       <div class="bar-content flex flex-col">
         <div class="flex-grow">
-          <button class="p-3 bg-blue-400 w-full" @click="draw(decks.politics)">
-            Draw Politics ({{ decks.politics.remaining }} remaining)
-          </button>
-          <button class="p-3 bg-red-400 w-full" @click="draw(decks.industry)">
-            Draw Industry ({{ decks.industry.remaining }} remaining)
-          </button>
-          <button class="p-3 bg-green-400 w-full" @click="draw(decks.science)">
-            Draw Science ({{ decks.science.remaining }} remaining)
-          </button>
+          <div class="flex">
+            <button
+              class="p-1 bg-blue-400 hover:bg-blue-600 duration-200 flex-1"
+              @click="draw(decks.politics)"
+            >
+              Politics ({{ decks.politics.remaining }}/40)
+            </button>
+            <button
+              class="p-1 bg-red-400 hover:bg-red-600 duration-200 flex-1"
+              @click="draw(decks.industry)"
+            >
+              Industry ({{ decks.industry.remaining }}/40)
+            </button>
+            <button
+              class="p-1 bg-green-400 hover:bg-green-600 duration-200 flex-1"
+              @click="draw(decks.science)"
+            >
+              Science ({{ decks.science.remaining }}/40)
+            </button>
+          </div>
+
           <Dialog :show="showDiscard" @toggle="toggleDiscard">
             <template v-slot:button
-              ><h4 class="text-white">
+              ><h6 class="text-white">
                 Discard ({{ discard.length }})
-              </h4></template
+              </h6></template
             >
             <template v-slot:header>All Discarded Cards</template>
             <p v-if="discard.length <= 0">
@@ -67,8 +79,8 @@
       </div>
     </div>
     <div class="flex-grow bg-black h-screen">
-      <div v-if="shouldBoardDisplay" class="board">
-        <div class="flex justify-around">
+      <div v-if="shouldBoardDisplay" class="board relative">
+        <div class="flex justify-around mt-6">
           <System :system.sync="systems[0]" group="board" />
         </div>
         <div class="flex justify-around">
@@ -87,6 +99,11 @@
         <div class="flex justify-around">
           <System :system.sync="systems[8]" group="board" />
         </div>
+        <button class="next-turn-button" @click="nextTurn">Pass Turn</button>
+        <div class="active-player-stats">
+          Credits: {{ players[activePlayer].credits }}<br />
+          Total Devlopments: {{ activePlayerDevelopmentCount }}
+        </div>
       </div>
       <div class="hand" v-if="shouldBoardDisplay">
         <DropZone :list.sync="hand" group="hand" />
@@ -104,7 +121,15 @@
         class=""
       >
         <button
-          v-if="!option.condition || option.condition({card: contextCard})"
+          v-if="
+            !option.condition ||
+              option.condition({
+                card: contextCard,
+                system: systems[contextLoc],
+                activePlayer,
+                players,
+              })
+          "
           class="hover:bg-gray-600 p-2 w-full text-left"
           @click="performAction(option.action)"
         >
@@ -133,6 +158,7 @@ import {
   HAND_CONTEXT_MENU,
   DISCARD_CONTEXT_MENU,
   DAMAGE_CONTEXT_MENU,
+  SCOUT,
   generateResolveContextMenu,
 } from "@/lib/core-v1";
 import Deck from "@/models/Deck";
@@ -150,6 +176,19 @@ export default {
       showDiscard: false,
       showStack: false,
       showContextMenu: false,
+      players: {
+        player1: {
+          credits: 0,
+          technology: [],
+          hand: [],
+        },
+        player2: {
+          credits: 0,
+          technology: [],
+          hand: [],
+        },
+      },
+      activePlayer: "player1",
       contextCard: null,
       contextLoc: 0,
       contextCoordinates: {
@@ -160,7 +199,6 @@ export default {
         img: "",
       },
       systems: [],
-      hand: [],
       discard: [],
       stack: [],
       decks: {
@@ -174,6 +212,19 @@ export default {
   computed: {
     shouldBoardDisplay() {
       return this.showBoard && !this.showDiscard && !this.showStack;
+    },
+    activePlayerDevelopmentCount() {
+      return this.systems
+        .filter((system) => system.card.controlledBy === this.activePlayer)
+        .reduce((total, system) => system.card.developmentLevel + total, 0);
+    },
+    hand: {
+      get() {
+        return this.players[this.activePlayer].hand;
+      },
+      set(val) {
+        this.players[this.activePlayer].hand = val;
+      },
     },
   },
   methods: {
@@ -190,10 +241,10 @@ export default {
       return this.nextId;
     },
     draw(deck) {
-      if (this.hand.length < 8) {
+      if (this.players[this.activePlayer].hand.length < 8) {
         const nextCard = deck.draw();
-        this.hand = [
-          ...this.hand,
+        this.players[this.activePlayer].hand = [
+          ...this.players[this.activePlayer].hand,
           {
             ...nextCard,
             id: this.getNextId(),
@@ -219,24 +270,23 @@ export default {
       };
       this.showContextMenu = true;
       this.contextCard = card;
-      this.contextLoc = loc
+      this.contextLoc = loc;
     },
     performAction(action) {
       const keys = action.split(":");
       switch (keys[0]) {
         case "build":
-          console.log(this.contextLoc);
           const card = { ...CARD_LIST.find((c) => c.id == keys[1]) };
           if (card) {
-            this.systems[this.contextLoc].cards = [
-              ...this.systems[this.contextLoc].cards,
+            this.systems[this.contextLoc][this.activePlayer] = [
+              ...this.systems[this.contextLoc][this.activePlayer],
               { ...card, id: this.getNextId() },
             ];
           }
           break;
         case "build-in":
-          this.systems[keys[1]].cards = [
-            ...this.systems[keys[1]].cards,
+          this.systems[keys[1]][this.activePlayer] = [
+            ...this.systems[keys[1]][this.activePlayer],
             { ...this.contextCard, contextMenu: [...DAMAGE_CONTEXT_MENU] },
           ];
 
@@ -245,6 +295,8 @@ export default {
           );
           break;
         case "develop":
+          this.contextCard.controlledBy = this.activePlayer;
+
           if (
             this.contextCard.developmentLevel <
             this.contextCard.maxDevelopmentLevel
@@ -272,7 +324,7 @@ export default {
           ];
 
           this.systems.forEach((system) => {
-            system.cards = system.cards.filter(
+            system[this.activePlayer] = system[this.activePlayer].filter(
               (card) => card.id !== this.contextCard.id
             );
           });
@@ -291,9 +343,9 @@ export default {
                 ...this.stack,
               ];
 
-              this.hand = this.hand.filter(
-                (card) => card.id !== this.contextCard.id
-              );
+              this.players[this.activePlayer].hand = this.players[
+                this.activePlayer
+              ].hand.filter((card) => card.id !== this.contextCard.id);
               break;
             case "discard":
               this.discard = [
@@ -301,13 +353,13 @@ export default {
                 ...this.discard,
               ];
 
-              this.hand = this.hand.filter(
-                (card) => card.id !== this.contextCard.id
-              );
+              this.players[this.activePlayer].hand = this.players[
+                this.activePlayer
+              ].hand.filter((card) => card.id !== this.contextCard.id);
               break;
             case "return":
-              this.hand = [
-                ...this.hand,
+              this.players[this.activePlayer].hand = [
+                ...this.players[this.activePlayer].hand,
                 { ...this.contextCard, contextMenu: [...HAND_CONTEXT_MENU] },
               ];
 
@@ -335,6 +387,14 @@ export default {
 
       this.showContextMenu = false;
     },
+    nextTurn() {
+      this.activePlayer =
+        this.activePlayer === "player1" ? "player2" : "player1";
+
+      this.players[
+        this.activePlayer
+      ].credits += this.activePlayerDevelopmentCount;
+    },
   },
   mounted() {
     const systems = [];
@@ -342,13 +402,24 @@ export default {
       systems.push({
         card:
           i === 0 || i === 8
-            ? { ...HOMEWORLD, loc: i }
-            : { ...this.decks.system.draw(), loc: i },
-        cards: [],
+            ? {
+                ...HOMEWORLD,
+                loc: i,
+                controlledBy: i === 0 ? "player2" : "player1",
+              }
+            : { ...this.decks.system.draw(), loc: i, controlledBy: null },
+        player1: [],
+        player2: [],
       });
     }
+
+    systems[0].player2.push({ ...SCOUT, id: this.getNextId() });
+    systems[8].player1.push({ ...SCOUT, id: this.getNextId() });
+
     this.systems = systems;
     this.showBoard = true;
+
+    this.players.player1.credits++
 
     EventBus.$on("card:hover", (card) => {
       if (!this.showDiscard) this.hoveredCard = card;
@@ -409,5 +480,21 @@ export default {
   @apply bg-gray-900 text-white rounded;
   position: absolute;
   border: 1px solid white;
+}
+
+.next-turn-button {
+  @apply absolute p-3 bg-green-900 rounded-lg shadow-md text-white duration-200;
+  bottom: 10px;
+  right: 10px;
+
+  &:hover {
+    @apply bg-green-600;
+  }
+}
+
+.active-player-stats {
+  @apply absolute text-white;
+  bottom: 10px;
+  left: 10px;
 }
 </style>

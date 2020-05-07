@@ -81,7 +81,7 @@ export default {
 
   &.xs {
     width: 30px;
-    height: 50px;
+    height: 45px;
   }
 
   &.md {
