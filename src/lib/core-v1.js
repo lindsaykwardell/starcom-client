@@ -62,9 +62,10 @@ const SYSTEM_CONTEXT_MENU = [
   {
     action: "develop",
     label: "Build Development",
-    condition: ({ card, system, activePlayer }) =>
-      card.controlledBy === activePlayer ||
-      (!card.controlledBy && system[activePlayer].length > 0),
+    condition: ({ card, system, activePlayer, players }) =>
+      (card.controlledBy === activePlayer ||
+        (!card.controlledBy && system[activePlayer].length > 0)) &&
+      players[activePlayer].credits >= (card.developmentLevel * 2 || 1),
   },
 ];
 
@@ -89,6 +90,66 @@ export const DAMAGE_CONTEXT_MENU = [
   {
     action: "destroy",
     label: "Destroy this",
+  },
+];
+
+const SHIP_CONTEXT_MENU = [
+  {
+    action: "build:15",
+    label: "Build Corvette",
+    condition: ({ card, system, activePlayer, players }) =>
+      card.controlledBy === activePlayer && players[activePlayer].credits >= 2,
+  },
+  {
+    action: "build:18",
+    label: "Build Destroyer",
+    condition: ({ card, system, activePlayer, players }) =>
+      card.controlledBy === activePlayer && players[activePlayer].credits >= 3,
+  },
+  {
+    action: "build:28",
+    label: "Build Frigate",
+    condition: ({ card, system, activePlayer, players }) =>
+      card.controlledBy === activePlayer && players[activePlayer].credits >= 2,
+  },
+  {
+    action: "build:8",
+    label: "Build Battlecruiser",
+    condition: ({ card, system, activePlayer, players }) =>
+      card.controlledBy === activePlayer && players[activePlayer].credits >= 6,
+  },
+  {
+    action: "build:41",
+    label: "Build Missile Cruiser",
+    condition: ({ card, system, activePlayer, players }) =>
+      card.controlledBy === activePlayer && players[activePlayer].credits >= 6,
+  },
+  {
+    action: "build:11",
+    label: "Build Carrier",
+    condition: ({ card, system, activePlayer, players }) =>
+      card.controlledBy === activePlayer && players[activePlayer].credits >= 8,
+  },
+  {
+    action: "build:19",
+    label: "Build Dreadnought",
+    condition: ({ card, system, activePlayer, players }) =>
+      card.controlledBy === activePlayer && players[activePlayer].credits >= 8,
+  },
+];
+
+const STATION_CONTEXT_MENU = [
+  {
+    action: "build:17",
+    label: "Build Defense Station",
+    condition: ({ card, system, activePlayer, players }) =>
+      card.controlledBy === activePlayer && players[activePlayer].credits >= 2,
+  },
+  {
+    action: "build:45",
+    label: "Build Orbital Hangar",
+    condition: ({ card, system, activePlayer, players }) =>
+      card.controlledBy === activePlayer && players[activePlayer].credits >= 3,
   },
 ];
 
@@ -122,6 +183,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 3,
+    cost: 2,
     contextMenu: [],
   },
   {
@@ -131,6 +193,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 3,
+    cost: 4,
     contextMenu: [],
   },
   {
@@ -140,6 +203,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 3,
+    cost: 4,
     contextMenu: [],
   },
   {
@@ -149,7 +213,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SYSTEM,
     count: 3,
-    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 4,
   },
@@ -160,6 +224,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 3,
+    cost: 4,
     contextMenu: [],
   },
   {
@@ -169,7 +234,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: SYSTEM,
     count: 3,
-    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 1,
   },
@@ -180,6 +245,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 3,
+    cost: 3,
     contextMenu: [],
   },
   {
@@ -189,6 +255,7 @@ export const CARD_LIST = [
     domain: null,
     deck: null,
     damage: 0,
+    cost: 6,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
@@ -198,7 +265,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SYSTEM,
     count: 1,
-    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 2,
   },
@@ -209,6 +276,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 3,
+    cost: 4,
     contextMenu: [],
   },
   {
@@ -218,6 +286,7 @@ export const CARD_LIST = [
     domain: null,
     deck: null,
     damage: 0,
+    cost: 8,
     contextMenu: [...DAMAGE_CONTEXT_MENU, ...BUILD_FIGHTER_CONTEXT_MENU],
   },
   {
@@ -227,6 +296,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 3,
+    cost: 2,
     contextMenu: [],
   },
   {
@@ -236,6 +306,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 4,
+    cost: 2,
     contextMenu: [],
   },
   {
@@ -245,6 +316,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 2,
+    cost: 4,
     contextMenu: [],
   },
   {
@@ -254,6 +326,7 @@ export const CARD_LIST = [
     domain: null,
     deck: null,
     damage: 0,
+    cost: 2,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
@@ -263,6 +336,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 3,
+    cost: 3,
     contextMenu: [],
   },
   {
@@ -281,6 +355,7 @@ export const CARD_LIST = [
     domain: null,
     deck: null,
     damage: 0,
+    cost: 3,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
@@ -290,6 +365,7 @@ export const CARD_LIST = [
     domain: null,
     deck: null,
     damage: 0,
+    cost: 8,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
@@ -299,7 +375,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SYSTEM,
     count: 1,
-    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 6,
   },
@@ -321,6 +397,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 3,
+    cost: 4,
     contextMenu: [],
   },
   {
@@ -330,6 +407,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 4,
+    cost: 3,
     contextMenu: [],
   },
   {
@@ -339,6 +417,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 3,
+    cost: 3,
     contextMenu: [],
   },
   {
@@ -348,6 +427,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 2,
+    cost: 5,
     contextMenu: [],
   },
   {
@@ -357,7 +437,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: SYSTEM,
     count: 1,
-    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 6,
   },
@@ -368,6 +448,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 4,
+    cost: 2,
     contextMenu: [],
   },
   {
@@ -377,6 +458,7 @@ export const CARD_LIST = [
     domain: null,
     deck: null,
     damage: 0,
+    cost: 2,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
@@ -386,6 +468,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 4,
+    cost: 3,
     contextMenu: [],
   },
   {
@@ -396,60 +479,8 @@ export const CARD_LIST = [
     deck: null,
     contextMenu: [
       ...SYSTEM_CONTEXT_MENU,
-      {
-        action: "build:15",
-        label: "Build Corvette",
-        condition: ({ card, system, activePlayer, players }) =>
-          card.controlledBy === activePlayer && players[activePlayer].credits >= 2,
-      },
-      {
-        action: "build:18",
-        label: "Build Destroyer",
-        condition: ({ card, system, activePlayer, players }) =>
-          card.controlledBy === activePlayer && players[activePlayer].credits >= 3,
-      },
-      {
-        action: "build:28",
-        label: "Build Frigate",
-        condition: ({ card, system, activePlayer, players }) =>
-          card.controlledBy === activePlayer && players[activePlayer].credits >= 2,
-      },
-      {
-        action: "build:8",
-        label: "Build Battlecruiser",
-        condition: ({ card, system, activePlayer, players }) =>
-          card.controlledBy === activePlayer && players[activePlayer].credits >= 6,
-      },
-      {
-        action: "build:41",
-        label: "Build Missile Cruiser",
-        condition: ({ card, system, activePlayer, players }) =>
-          card.controlledBy === activePlayer && players[activePlayer].credits >= 6,
-      },
-      {
-        action: "build:11",
-        label: "Build Carrier",
-        condition: ({ card, system, activePlayer, players }) =>
-          card.controlledBy === activePlayer && players[activePlayer].credits >= 8,
-      },
-      {
-        action: "build:19",
-        label: "Build Dreadnought",
-        condition: ({ card, system, activePlayer, players }) =>
-          card.controlledBy === activePlayer && players[activePlayer].credits >= 8,
-      },
-      {
-        action: "build:17",
-        label: "Build Defense Station",
-        condition: ({ card, system, activePlayer, players }) =>
-          card.controlledBy === activePlayer && players[activePlayer].credits >= 2,
-      },
-      {
-        action: "build:45",
-        label: "Build Orbital Hangar",
-        condition: ({ card, system, activePlayer, players }) =>
-          card.controlledBy === activePlayer && players[activePlayer].credits >= 3,
-      },
+      ...SHIP_CONTEXT_MENU,
+      ...STATION_CONTEXT_MENU,
     ],
     developmentLevel: 1,
     maxDevelopmentLevel: 6,
@@ -461,6 +492,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 2,
+    cost: 5,
     contextMenu: [],
   },
   {
@@ -470,6 +502,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 3,
+    cost: 4,
     contextMenu: [],
   },
   {
@@ -479,6 +512,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 4,
+    cost: 3,
     contextMenu: [],
   },
   {
@@ -488,6 +522,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 3,
+    cost: 3,
     contextMenu: [],
   },
   {
@@ -497,6 +532,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 2,
+    cost: 5,
     contextMenu: [],
   },
   {
@@ -506,6 +542,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 2,
+    cost: 4,
     contextMenu: [],
   },
   {
@@ -515,6 +552,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 2,
+    cost: 5,
     contextMenu: [],
   },
   {
@@ -524,6 +562,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 2,
+    cost: 6,
     contextMenu: [],
   },
   {
@@ -533,6 +572,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 4,
+    cost: 2,
     contextMenu: [],
   },
   {
@@ -542,7 +582,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: SYSTEM,
     count: 2,
-    contextMenu: [...SYSTEM_CONTEXT_MENU, ...BUILD_FIGHTER_CONTEXT_MENU],
+    contextMenu: [...SYSTEM_CONTEXT_MENU, ...BUILD_FIGHTER_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 3,
   },
@@ -553,6 +593,7 @@ export const CARD_LIST = [
     domain: null,
     deck: null,
     damage: 0,
+    cost: 6,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
@@ -563,6 +604,7 @@ export const CARD_LIST = [
     deck: POLITICS,
     count: 4,
     damage: 0,
+    cost: 3,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
@@ -572,7 +614,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: SYSTEM,
     count: 3,
-    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 3,
   },
@@ -584,6 +626,7 @@ export const CARD_LIST = [
     deck: SCIENCE,
     count: 3,
     damage: 0,
+    cost: 3,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
@@ -602,6 +645,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 2,
+    cost: 4,
     contextMenu: [],
   },
   {
@@ -611,7 +655,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: SYSTEM,
     count: 2,
-    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 4,
   },
@@ -622,7 +666,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: SYSTEM,
     count: 1,
-    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    contextMenu: [...SYSTEM_CONTEXT_MENU, STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 2,
   },
@@ -633,6 +677,7 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SCIENCE,
     count: 4,
+    cost: 2,
     contextMenu: [],
   },
   {
@@ -642,6 +687,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 4,
+    cost: 2,
     contextMenu: [],
   },
   {
@@ -652,7 +698,9 @@ export const CARD_LIST = [
     deck: INDUSTRY,
     count: 4,
     damage: 0,
+    cost: 2,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
+    onTurnStart: ({ card, system, activePlayer, players }) => players[activePlayer].credits += 2
   },
   {
     id: 52,
@@ -661,6 +709,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 4,
+    cost: 2,
     contextMenu: [],
   },
   {
@@ -670,9 +719,10 @@ export const CARD_LIST = [
     domain: SCIENCE,
     deck: SYSTEM,
     count: 2,
-    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 4,
+    onTurnStart: () => alert("Research World: At the start of your turn, draw a card.")
   },
   {
     id: 54,
@@ -681,6 +731,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 4,
+    cost: 3,
     contextMenu: [],
   },
   {
@@ -690,6 +741,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 4,
+    cost: 3,
     contextMenu: [],
   },
   {
@@ -699,6 +751,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 2,
+    cost: 5,
     contextMenu: [],
   },
   {
@@ -717,7 +770,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: SYSTEM,
     count: 1,
-    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 6,
   },
@@ -728,6 +781,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: POLITICS,
     count: 4,
+    cost: 2,
     contextMenu: [],
   },
   {
@@ -737,6 +791,7 @@ export const CARD_LIST = [
     domain: null,
     deck: null,
     damage: 0,
+    cost: 1,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
@@ -746,6 +801,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 2,
+    cost: 6,
     contextMenu: [],
   },
   {
@@ -755,6 +811,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 3,
+    cost: 4,
     contextMenu: [],
   },
   {
@@ -764,6 +821,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: INDUSTRY,
     count: 2,
+    cost: 4,
     contextMenu: [],
   },
   {
@@ -773,7 +831,7 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: SYSTEM,
     count: 2,
-    contextMenu: [...SYSTEM_CONTEXT_MENU],
+    contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 4,
   },
@@ -825,4 +883,4 @@ export const DECK_SYSTEM = CARD_LIST.filter(
   return list;
 }, []);
 
-export const SCOUT = CARD_LIST.find(card => card.id === 57)
+export const SCOUT = CARD_LIST.find((card) => card.id === 57);

@@ -100,9 +100,27 @@
           <System :system.sync="systems[8]" group="board" />
         </div>
         <button class="next-turn-button" @click="nextTurn">Pass Turn</button>
-        <div class="active-player-stats">
-          Credits: {{ players[activePlayer].credits }}<br />
-          Total Devlopments: {{ activePlayerDevelopmentCount }}
+        <div class="active-player-stats flex">
+          <div
+            class="flex-1 mr-3 bg-red-400 p-1 rounded-lg duration-200"
+            :class="
+              activePlayer === 'player1' ? 'bg-red-400 shadow-lg' : 'bg-red-900'
+            "
+          >
+            Credits: {{ players[activePlayer].credits }}<br />
+            Total Devlopments: {{ getPlayerDevelopmentCount("player1") }}
+          </div>
+          <div
+            class="flex-1 bg-blue-400 p-1 rounded-lg duration-200"
+            :class="
+              activePlayer === 'player2'
+                ? 'bg-blue-400 shadow-lg'
+                : 'bg-blue-900'
+            "
+          >
+            Credits: {{ players.player2.credits }}<br />
+            Total Devlopments: {{ getPlayerDevelopmentCount("player2") }}
+          </div>
         </div>
       </div>
       <div class="hand" v-if="shouldBoardDisplay">
@@ -226,6 +244,9 @@ export default {
         this.players[this.activePlayer].hand = val;
       },
     },
+    nonActivePlayer() {
+      return this.activePlayer === "player1" ? "player2" : "player1";
+    },
   },
   methods: {
     toggleDiscard(val) {
@@ -235,6 +256,11 @@ export default {
     toggleStack(val) {
       this.showStack = val;
       this.showBoard = !val;
+    },
+    getPlayerDevelopmentCount(player) {
+      return this.systems
+        .filter((system) => system.card.controlledBy === player)
+        .reduce((total, system) => system.card.developmentLevel + total, 0);
     },
     getNextId() {
       this.nextId = this.nextId + 1;
@@ -282,6 +308,7 @@ export default {
               ...this.systems[this.contextLoc][this.activePlayer],
               { ...card, id: this.getNextId() },
             ];
+            this.players[this.activePlayer].credits -= card.cost;
           }
           break;
         case "build-in":
@@ -301,6 +328,9 @@ export default {
             this.contextCard.developmentLevel <
             this.contextCard.maxDevelopmentLevel
           ) {
+            let cost = this.systems[this.contextLoc].card.developmentLevel * 2;
+            if (cost === 0) cost = 1;
+            this.players[this.activePlayer].credits -= cost;
             this.systems[this.contextLoc].card.developmentLevel++;
           }
 
@@ -332,20 +362,31 @@ export default {
         case "hand":
           switch (keys[1]) {
             case "play":
-              this.stack = [
-                {
-                  ...this.contextCard,
-                  contextMenu: generateResolveContextMenu(
-                    this.systems,
-                    this.contextCard
-                  ),
-                },
-                ...this.stack,
-              ];
+              if (
+                this.players[this.activePlayer].credits >= this.contextCard.cost
+              ) {
+                this.players[
+                  this.activePlayer
+                ].credits -= this.contextCard.cost;
 
-              this.players[this.activePlayer].hand = this.players[
-                this.activePlayer
-              ].hand.filter((card) => card.id !== this.contextCard.id);
+                this.stack = [
+                  {
+                    ...this.contextCard,
+                    contextMenu: generateResolveContextMenu(
+                      this.systems,
+                      this.contextCard
+                    ),
+                  },
+                  ...this.stack,
+                ];
+
+                this.players[this.activePlayer].hand = this.players[
+                  this.activePlayer
+                ].hand.filter((card) => card.id !== this.contextCard.id);
+              } else {
+                alert("You don't have enough credits!");
+              }
+
               break;
             case "discard":
               this.discard = [
@@ -362,6 +403,8 @@ export default {
                 ...this.players[this.activePlayer].hand,
                 { ...this.contextCard, contextMenu: [...HAND_CONTEXT_MENU] },
               ];
+
+              this.players[this.activePlayer].credits += this.contextCard.cost;
 
               this.discard = this.discard.filter(
                 (card) => card.id !== this.contextCard.id
@@ -388,12 +431,47 @@ export default {
       this.showContextMenu = false;
     },
     nextTurn() {
+      this.systems.forEach((system) => {
+        if (
+          system.card.controlledBy === this.nonActivePlayer &&
+          system[this.activePlayer].length > 0 &&
+          system[this.nonActivePlayer].length === 0
+        ) {
+          system.card.controlledBy = this.activePlayer;
+          system.card.developmentLevel = 1;
+        }
+      });
+
       this.activePlayer =
         this.activePlayer === "player1" ? "player2" : "player1";
 
       this.players[
         this.activePlayer
       ].credits += this.activePlayerDevelopmentCount;
+
+      this.systems.forEach((system) => {
+        if (
+          system.card.controlledBy === this.activePlayer &&
+          system.card.onTurnStart
+        ) {
+          system.card.onTurnStart({
+            card: system.card,
+            system: system,
+            activePlayer: this.activePlayer,
+            players: this.players,
+          });
+        }
+        system[this.activePlayer].forEach((card) => {
+          if (card.onTurnStart) {
+            card.onTurnStart({
+              card: card,
+              system: system,
+              activePlayer: this.activePlayer,
+              players: this.players,
+            });
+          }
+        });
+      });
     },
   },
   mounted() {
@@ -419,7 +497,7 @@ export default {
     this.systems = systems;
     this.showBoard = true;
 
-    this.players.player1.credits++
+    this.players.player1.credits++;
 
     EventBus.$on("card:hover", (card) => {
       if (!this.showDiscard) this.hoveredCard = card;
@@ -493,7 +571,7 @@ export default {
 }
 
 .active-player-stats {
-  @apply absolute text-white;
+  @apply absolute text-white text-left;
   bottom: 10px;
   left: 10px;
 }
