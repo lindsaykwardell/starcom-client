@@ -81,23 +81,59 @@
     <div class="flex-grow bg-black h-screen">
       <div v-if="shouldBoardDisplay" class="board relative">
         <div class="flex justify-around mt-6">
-          <System :system.sync="systems[0]" group="board" />
+          <System
+            :system.sync="systems[0]"
+            group="board"
+            @explored="onExplore"
+          />
         </div>
         <div class="flex justify-around">
-          <System :system.sync="systems[1]" group="board" />
-          <System :system.sync="systems[2]" group="board" />
+          <System
+            :system.sync="systems[1]"
+            group="board"
+            @explored="onExplore"
+          />
+          <System
+            :system.sync="systems[2]"
+            group="board"
+            @explored="onExplore"
+          />
         </div>
         <div class="flex justify-between">
-          <System :system.sync="systems[3]" group="board" />
-          <System :system.sync="systems[4]" group="board" />
-          <System :system.sync="systems[5]" group="board" />
+          <System
+            :system.sync="systems[3]"
+            group="board"
+            @explored="onExplore"
+          />
+          <System
+            :system.sync="systems[4]"
+            group="board"
+            @explored="onExplore"
+          />
+          <System
+            :system.sync="systems[5]"
+            group="board"
+            @explored="onExplore"
+          />
         </div>
         <div class="flex justify-around">
-          <System :system.sync="systems[6]" group="board" />
-          <System :system.sync="systems[7]" group="board" />
+          <System
+            :system.sync="systems[6]"
+            group="board"
+            @explored="onExplore"
+          />
+          <System
+            :system.sync="systems[7]"
+            group="board"
+            @explored="onExplore"
+          />
         </div>
         <div class="flex justify-around">
-          <System :system.sync="systems[8]" group="board" />
+          <System
+            :system.sync="systems[8]"
+            group="board"
+            @explored="onExplore"
+          />
         </div>
         <button class="next-turn-button" @click="nextTurn">Pass Turn</button>
         <div class="active-player-stats flex">
@@ -298,6 +334,17 @@ export default {
       this.contextCard = card;
       this.contextLoc = loc;
     },
+    onExplore(card) {
+      card.explored = true;
+      if (card.onExplore) {
+        card.onExplore({
+          card,
+          system: this.systems[card.loc],
+          activePlayer: this.activePlayer,
+          players: this.players,
+        });
+      }
+    },
     performAction(action) {
       const keys = action.split(":");
       switch (keys[0]) {
@@ -484,6 +531,7 @@ export default {
                 ...HOMEWORLD,
                 loc: i,
                 controlledBy: i === 0 ? "player2" : "player1",
+                explored: false,
               }
             : { ...this.decks.system.draw(), loc: i, controlledBy: null },
         player1: [],
@@ -492,7 +540,9 @@ export default {
     }
 
     systems[0].player2.push({ ...SCOUT, id: this.getNextId() });
+    systems[0].card.explored = true;
     systems[8].player1.push({ ...SCOUT, id: this.getNextId() });
+    systems[8].card.explored = true;
 
     this.systems = systems;
     this.showBoard = true;

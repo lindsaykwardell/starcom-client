@@ -9,7 +9,7 @@
       :loc="system.card.loc"
     />
     <div class="relative">
-      <Card class="horizontal" :card="system.card" />
+      <Card class="horizontal" :card="system.card.explored ? system.card : undefined" />
       <div v-if="system.card.developmentLevel > 0" class="development-die">
         <font-awesome size="3x" :icon="['fa', dice]" :class="dieColor" />
       </div>
@@ -90,7 +90,11 @@ export default {
   watch: {
     system: {
       deep: true,
-      handler() {},
+      handler() {
+        if (!this.system.card.explored) {
+          this.$emit('explored', this.system.card)
+        }
+      },
     },
     _system: {
       deep: true,

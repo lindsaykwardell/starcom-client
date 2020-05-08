@@ -216,6 +216,7 @@ export const CARD_LIST = [
     contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 4,
+    onExplore: () => alert("Draw two cards from any one deck"),
   },
   {
     id: 5,
@@ -582,7 +583,11 @@ export const CARD_LIST = [
     domain: POLITICS,
     deck: SYSTEM,
     count: 2,
-    contextMenu: [...SYSTEM_CONTEXT_MENU, ...BUILD_FIGHTER_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
+    contextMenu: [
+      ...SYSTEM_CONTEXT_MENU,
+      ...BUILD_FIGHTER_CONTEXT_MENU,
+      ...STATION_CONTEXT_MENU,
+    ],
     developmentLevel: 0,
     maxDevelopmentLevel: 3,
   },
@@ -617,6 +622,10 @@ export const CARD_LIST = [
     contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 3,
+    onExplore: ({ card, system, activePlayer, players }) => {
+      card.controlledBy = activePlayer;
+      card.developmentLevel += 1;
+    },
   },
   {
     id: 44,
@@ -666,7 +675,7 @@ export const CARD_LIST = [
     domain: INDUSTRY,
     deck: SYSTEM,
     count: 1,
-    contextMenu: [...SYSTEM_CONTEXT_MENU, STATION_CONTEXT_MENU],
+    contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 2,
   },
@@ -700,7 +709,8 @@ export const CARD_LIST = [
     damage: 0,
     cost: 2,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
-    onTurnStart: ({ card, system, activePlayer, players }) => players[activePlayer].credits += 2
+    onTurnStart: ({ card, system, activePlayer, players }) =>
+      (players[activePlayer].credits += 2),
   },
   {
     id: 52,
@@ -722,7 +732,8 @@ export const CARD_LIST = [
     contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 4,
-    onTurnStart: () => alert("Research World: At the start of your turn, draw a card.")
+    onTurnStart: () =>
+      alert("Research World: At the start of your turn, draw a card."),
   },
   {
     id: 54,
@@ -834,6 +845,8 @@ export const CARD_LIST = [
     contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 4,
+    onTurnStart: ({ card, system, activePlayer, players }) =>
+      (players[activePlayer].credits += 2),
   },
 ];
 
