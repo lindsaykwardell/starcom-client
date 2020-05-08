@@ -6,19 +6,19 @@
           <div class="flex">
             <button
               class="p-1 bg-blue-400 hover:bg-blue-600 duration-200 flex-1"
-              @click="draw(decks.politics)"
+              @click="draw(activePlayer, decks.politics)"
             >
               Politics ({{ decks.politics.remaining }}/40)
             </button>
             <button
               class="p-1 bg-red-400 hover:bg-red-600 duration-200 flex-1"
-              @click="draw(decks.industry)"
+              @click="draw(activePlayer, decks.industry)"
             >
               Industry ({{ decks.industry.remaining }}/40)
             </button>
             <button
               class="p-1 bg-green-400 hover:bg-green-600 duration-200 flex-1"
-              @click="draw(decks.science)"
+              @click="draw(activePlayer, decks.science)"
             >
               Science ({{ decks.science.remaining }}/40)
             </button>
@@ -143,7 +143,7 @@
               activePlayer === 'player1' ? 'bg-red-400 shadow-lg' : 'bg-red-900'
             "
           >
-            Credits: {{ players[activePlayer].credits }}<br />
+            Credits: {{ players.player1.credits }}<br />
             Total Devlopments: {{ getPlayerDevelopmentCount("player1") }}
           </div>
           <div
@@ -157,10 +157,16 @@
             Credits: {{ players.player2.credits }}<br />
             Total Devlopments: {{ getPlayerDevelopmentCount("player2") }}
           </div>
+          <button class="p-2 bg-gray-700 hover:bg-gray-800 text-white ml-5 rounded-full duration-200 w-48" @click="showTechnology = !showTechnology">
+            Show {{showTechnology ? 'Hand' : "Technology"}}
+          </button>
+        </div>
+        <div class="d20">
+          <font-awesome size="4x" :icon="['fa', 'dice-d20']" :class="dieRoll" />
         </div>
       </div>
       <div class="hand" v-if="shouldBoardDisplay">
-        <DropZone :list.sync="hand" group="hand" />
+        <DropZone :list.sync="showTechnology ? technology : hand" group="hand" />
       </div>
     </div>
     <div
@@ -213,6 +219,10 @@ import {
   DISCARD_CONTEXT_MENU,
   DAMAGE_CONTEXT_MENU,
   SCOUT,
+  POLITICS,
+  INDUSTRY,
+  SCIENCE,
+  TECHNOLOGY,
   generateResolveContextMenu,
 } from "@/lib/core-v1";
 import Deck from "@/models/Deck";
@@ -226,8 +236,10 @@ export default {
   data() {
     return {
       nextId: 0,
+      dieValue: 0,
       showBoard: false,
       showDiscard: false,
+      showTechnology: true,
       showStack: false,
       showContextMenu: false,
       players: {
@@ -235,11 +247,13 @@ export default {
           credits: 0,
           technology: [],
           hand: [],
+          technology: [],
         },
         player2: {
           credits: 0,
           technology: [],
           hand: [],
+          technology: [],
         },
       },
       activePlayer: "player1",
@@ -280,11 +294,44 @@ export default {
         this.players[this.activePlayer].hand = val;
       },
     },
+    technology() {
+      return this.players[this.activePlayer].technology
+    },
     nonActivePlayer() {
       return this.activePlayer === "player1" ? "player2" : "player1";
     },
+    dieRoll() {
+      console.log(this.dieValue);
+
+      if (this.dieValue <= 5) {
+        return "industry";
+      } else if (this.dieValue > 5 && this.dieValue <= 10) {
+        return "politics";
+      } else if (this.dieValue > 10 && this.dieValue <= 15) {
+        return "science";
+      } else if (this.dieValue > 15 && this.dieValue <= 18) {
+        return "tax";
+      } else {
+        return "pirates";
+      }
+    },
   },
   methods: {
+    rollDie() {
+      this.dieValue = Math.floor(Math.random() * 21);
+    },
+    playerControlsDomain(player, domain) {
+      for (const system of this.systems) {
+        if (
+          system.card.controlledBy === player &&
+          system.card.domain === domain
+        ) {
+          return true;
+        }
+      }
+
+      return false;
+    },
     toggleDiscard(val) {
       this.showDiscard = val;
       this.showBoard = !val;
@@ -302,11 +349,17 @@ export default {
       this.nextId = this.nextId + 1;
       return this.nextId;
     },
-    draw(deck) {
-      if (this.players[this.activePlayer].hand.length < 8) {
+    draw(player, deck) {
+      if (typeof deck === "string") {
+        if (deck === INDUSTRY) deck = this.decks.industry;
+        if (deck === POLITICS) deck = this.decks.politics;
+        if (deck === SCIENCE) deck = this.decks.science;
+      }
+
+      if (this.players[player].hand.length < 8) {
         const nextCard = deck.draw();
-        this.players[this.activePlayer].hand = [
-          ...this.players[this.activePlayer].hand,
+        this.players[player].hand = [
+          ...this.players[player].hand,
           {
             ...nextCard,
             id: this.getNextId(),
@@ -404,6 +457,10 @@ export default {
             system[this.activePlayer] = system[this.activePlayer].filter(
               (card) => card.id !== this.contextCard.id
             );
+
+            system[this.nonActivePlayer] = system[this.nonActivePlayer].filter(
+              (card) => card.id !== this.contextCard.id
+            );
           });
           break;
         case "hand":
@@ -461,10 +518,20 @@ export default {
               );
               break;
             case "resolve":
-              this.discard = [
-                { ...this.contextCard, contextMenu: [...DISCARD_CONTEXT_MENU] },
-                ...this.discard,
-              ];
+              if (this.contextCard.type === TECHNOLOGY) {
+                this.players[this.activePlayer].technology = [
+                  ...this.players[this.activePlayer].technology,
+                  this.contextCard,
+                ];
+              } else {
+                this.discard = [
+                  {
+                    ...this.contextCard,
+                    contextMenu: [...DISCARD_CONTEXT_MENU],
+                  },
+                  ...this.discard,
+                ];
+              }
 
               this.stack = this.stack.filter(
                 (card) => card.id !== this.contextCard.id
@@ -519,6 +586,31 @@ export default {
           }
         });
       });
+
+      this.rollDie();
+
+      let domain;
+
+      switch (this.dieRoll) {
+        case "industry":
+          domain = INDUSTRY;
+          break;
+        case "politics":
+          domain = POLITICS;
+          break;
+        case "science":
+          domain = SCIENCE;
+          break;
+      }
+
+      if (domain) {
+        if (this.playerControlsDomain("player1", domain)) {
+          this.draw("player1", domain);
+        }
+        if (this.playerControlsDomain("player2", domain)) {
+          this.draw("player2", domain);
+        }
+      }
     },
   },
   mounted() {
@@ -624,5 +716,31 @@ export default {
   @apply absolute text-white text-left;
   bottom: 10px;
   left: 10px;
+}
+
+.d20 {
+  @apply absolute bg-white p-2 rounded-full;
+  top: 20px;
+  right: 20px;
+
+  & .industry {
+    @apply text-red-600;
+  }
+
+  & .politics {
+    @apply text-blue-600;
+  }
+
+  & .science {
+    @apply text-green-600;
+  }
+
+  & .tax {
+    @apply text-yellow-600;
+  }
+
+  & .pirates {
+    @apply text-black;
+  }
 }
 </style>

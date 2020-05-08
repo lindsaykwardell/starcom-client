@@ -11,6 +11,7 @@ import {
   faDiceFour,
   faDiceFive,
   faDiceSix,
+  faDiceD20,
 } from "@fortawesome/free-solid-svg-icons";
 
 import "@/assets/styles/index.postcss";
@@ -22,7 +23,8 @@ library.add(
   faDiceThree,
   faDiceFour,
   faDiceFive,
-  faDiceSix
+  faDiceSix,
+  faDiceD20
 );
 
 Vue.config.productionTip = false;

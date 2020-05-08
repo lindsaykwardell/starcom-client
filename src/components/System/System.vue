@@ -9,7 +9,10 @@
       :loc="system.card.loc"
     />
     <div class="relative">
-      <Card class="horizontal" :card="system.card.explored ? system.card : undefined" />
+      <Card
+        class="horizontal"
+        :card="system.card.explored ? system.card : undefined"
+      />
       <div v-if="system.card.developmentLevel > 0" class="development-die">
         <font-awesome size="3x" :icon="['fa', dice]" :class="dieColor" />
       </div>
@@ -51,7 +54,7 @@ export default {
     },
     player1: {
       get() {
-        return this.system.player1
+        return this.system.player1;
       },
       set(player1) {
         this._system = { ...this.system, player1 };
@@ -59,7 +62,7 @@ export default {
     },
     player2: {
       get() {
-        return this.system.player2
+        return this.system.player2;
       },
       set(player2) {
         this._system = { ...this.system, player2 };
@@ -83,16 +86,19 @@ export default {
       }
     },
     dieColor() {
-      if (this.system.card.controlledBy === "player1") return "text-red-400"
-      else return "text-blue-400"
-    }
+      if (this.system.card.controlledBy === "player1") return "text-red-400";
+      else return "text-blue-400";
+    },
   },
   watch: {
     system: {
       deep: true,
       handler() {
-        if (!this.system.card.explored) {
-          this.$emit('explored', this.system.card)
+        if (
+          !this.system.card.explored &&
+          (this.system.player1.length > 0 || this.system.player2.length > 0)
+        ) {
+          this.$emit("explored", this.system.card);
         }
       },
     },

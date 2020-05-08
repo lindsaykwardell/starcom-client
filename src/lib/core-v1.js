@@ -347,6 +347,7 @@ export const CARD_LIST = [
     domain: null,
     deck: null,
     damage: 0,
+    cost: 2,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
   },
   {
@@ -645,6 +646,7 @@ export const CARD_LIST = [
     domain: null,
     deck: null,
     damage: 0,
+    cost: 3,
     contextMenu: [...BUILD_FIGHTER_CONTEXT_MENU, ...DAMAGE_CONTEXT_MENU],
   },
   {
