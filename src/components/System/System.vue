@@ -2,15 +2,17 @@
   <div v-if="system" class="system">
     <DropZone
       class="dropzone top"
+      :class="combat ? 'combat' : ''"
       x:cardClass="player2.length > 5 ? 'xs' : 'sm'"
-      cardClass="xs"
+      :cardClass="combat ? '' : 'xs'"
       :list.sync="player2"
       :group="`player2-${group}`"
       :loc="system.card.loc"
+      :combat="combat"
     />
     <div class="relative">
       <Card
-        class="horizontal"
+        :class="combat ? 'horizontal-lg' : 'horizontal'"
         :card="system.card.explored ? system.card : undefined"
       />
       <div v-if="system.card.developmentLevel > 0" class="development-die">
@@ -20,10 +22,11 @@
     <DropZone
       class="dropzone bottom"
       x:cardClass="player1.length > 5 ? 'xs' : 'sm'"
-      cardClass="xs"
+      :cardClass="combat ? '' : 'xs'"
       :list.sync="player1"
       :group="`player1-${group}`"
       :loc="system.card.loc"
+      :combat="combat"
     />
   </div>
 </template>
@@ -41,6 +44,10 @@ export default {
     group: {
       type: String,
       default: "default",
+    },
+    combat: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {
@@ -128,6 +135,10 @@ export default {
 
   &.top {
     top: -45px;
+
+    &.combat {
+      top: -175px;
+    }
   }
 
   &.bottom {

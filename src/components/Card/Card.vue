@@ -1,6 +1,7 @@
 <template>
   <img
     class="card"
+    :class="hasAssignedDamage"
     :src="getImgUrl(card.img)"
     :alt="card.img"
     @mouseover="hoverCard"
@@ -12,7 +13,7 @@
 
 <script>
 import EventBus from "@/util/EventBus";
-import { DAMAGEABLE } from '@/lib/core-v1'
+import { DAMAGEABLE } from "@/lib/core-v1";
 
 export default {
   props: {
@@ -24,8 +25,12 @@ export default {
     },
     loc: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
+    combat: {
+      type: Boolean,
+      default: false,
+    },
   },
   methods: {
     getImgUrl(cardName) {
@@ -48,18 +53,30 @@ export default {
     },
   },
   computed: {
+    hasAssignedDamage() {
+      console.log("Changed")
+      return this.combat && !!this.card.damageAssignedTo
+        ? "assigned-damage"
+        : "";
+    },
     title() {
       if (DAMAGEABLE.includes(this.card.type)) {
-        return `Damage: ${this.card.damage}`
+        return `(${this.card.id}) Damage: ${this.card.damage}`;
       }
 
       return "";
-    }
-  }
+    },
+  },
 };
 </script>
 
 <style lang="postcss" scoped>
+.assigned-damage {
+    @apply transform;
+    --transform-rotate: 10deg;
+    opacity: 0.5;
+  }
+
 .card {
   width: 125px;
   height: 175px;

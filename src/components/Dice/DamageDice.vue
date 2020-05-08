@@ -24,7 +24,7 @@ export default {
     },
     size: {
       type: String,
-      default: "sm",
+      default: "lg",
     },
     showNumber: {
       type: Boolean,
@@ -55,8 +55,11 @@ export default {
 
 <style lang="postcss" scoped>
 .damage-die {
-  @apply rounded-full;
+  @apply rounded-lg;
   /* padding: 5px; */
+  /* max-width: 70%; */
+  pointer-events: none;
+  user-select: none;
   color: red;
   background: white;
   position: absolute;

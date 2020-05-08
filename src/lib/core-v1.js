@@ -67,6 +67,12 @@ const SYSTEM_CONTEXT_MENU = [
         (!card.controlledBy && system[activePlayer].length > 0)) &&
       players[activePlayer].credits >= (card.developmentLevel * 2 || 1),
   },
+  {
+    action: "combat",
+    label: "Begin Combat",
+    condition: ({ card, system, activePlayer, players, inCombat }) =>
+      !inCombat && system.player1.length > 0 && system.player2.length > 0,
+  },
 ];
 
 export const DAMAGE_CONTEXT_MENU = [
@@ -85,7 +91,7 @@ export const DAMAGE_CONTEXT_MENU = [
   {
     action: "repair:1",
     label: "Repair 1 damage",
-    condition: ({ card }) => card.damage > 0,
+    condition: ({ card, inCombat }) => card.damage > 0 && inCombat === false,
   },
   {
     action: "destroy",
@@ -177,6 +183,27 @@ export const generateResolveContextMenu = ({ card, systems, activePlayer }) => {
   return menu;
 };
 
+export const generateCombatContextMenu = ({ card, system, players }) => {
+  const menu = [...DAMAGE_CONTEXT_MENU];
+  let opponent = system.player1.find((c) => c.id === card.id)
+    ? "player2"
+    : "player1";
+  system[opponent].forEach((c) => {
+    menu.unshift({
+      action: `assign-damage:${c.id}`,
+      label: `Attack ${c.img} (${c.hp - c.damage}/${c.hp})`,
+      condition: ({ card, system, activePlayer, players }) =>
+        card.attack > 0 && !card.damageAssignedTo,
+    });
+  });
+  menu.unshift({
+    action: `unassign-damage`,
+    label: `Unassign damage`,
+    condition: ({ card }) => card.damageAssignedTo,
+  });
+  return menu;
+};
+
 export const CARD_LIST = [
   {
     id: 1,
@@ -260,7 +287,9 @@ export const CARD_LIST = [
     damage: 0,
     cost: 6,
     hp: 8,
+    attack: 4,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
+    combatContextMenu: generateCombatContextMenu,
   },
   {
     id: 9,
@@ -292,7 +321,9 @@ export const CARD_LIST = [
     damage: 0,
     cost: 8,
     hp: 14,
+    attack: 2,
     contextMenu: [...DAMAGE_CONTEXT_MENU, ...BUILD_FIGHTER_CONTEXT_MENU],
+    combatContextMenu: generateCombatContextMenu,
   },
   {
     id: 12,
@@ -333,7 +364,9 @@ export const CARD_LIST = [
     damage: 0,
     cost: 2,
     hp: 2,
+    attack: 3,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
+    combatContextMenu: generateCombatContextMenu,
   },
   {
     id: 16,
@@ -354,7 +387,9 @@ export const CARD_LIST = [
     damage: 0,
     cost: 2,
     hp: 6,
+    attack: 1,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
+    combatContextMenu: generateCombatContextMenu,
   },
   {
     id: 18,
@@ -365,7 +400,9 @@ export const CARD_LIST = [
     damage: 0,
     cost: 3,
     hp: 5,
+    attack: 2,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
+    combatContextMenu: generateCombatContextMenu,
   },
   {
     id: 19,
@@ -376,7 +413,9 @@ export const CARD_LIST = [
     damage: 0,
     cost: 8,
     hp: 12,
+    attack: 5,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
+    combatContextMenu: generateCombatContextMenu,
   },
   {
     id: 20,
@@ -470,7 +509,9 @@ export const CARD_LIST = [
     damage: 0,
     cost: 2,
     hp: 3,
+    attack: 2,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
+    combatContextMenu: generateCombatContextMenu,
   },
   {
     id: 29,
@@ -610,7 +651,9 @@ export const CARD_LIST = [
     damage: 0,
     cost: 6,
     hp: 8,
+    attack: 3,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
+    combatContextMenu: generateCombatContextMenu,
   },
   {
     id: 42,
@@ -622,7 +665,9 @@ export const CARD_LIST = [
     damage: 0,
     cost: 3,
     hp: 6,
+    attack: 3,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
+    combatContextMenu: generateCombatContextMenu,
   },
   {
     id: 43,
@@ -649,7 +694,9 @@ export const CARD_LIST = [
     damage: 0,
     cost: 3,
     hp: 3,
+    attack: 0,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
+    combatContextMenu: generateCombatContextMenu,
   },
   {
     id: 45,
@@ -660,7 +707,9 @@ export const CARD_LIST = [
     damage: 0,
     cost: 3,
     hp: 6,
+    attack: 0,
     contextMenu: [...BUILD_FIGHTER_CONTEXT_MENU, ...DAMAGE_CONTEXT_MENU],
+    combatContextMenu: generateCombatContextMenu,
   },
   {
     id: 46,
@@ -724,9 +773,11 @@ export const CARD_LIST = [
     damage: 0,
     cost: 2,
     hp: 3,
+    attack: 0,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
     onTurnStart: ({ card, system, activePlayer, players }) =>
       (players[activePlayer].credits += 2),
+    combatContextMenu: generateCombatContextMenu,
   },
   {
     id: 52,
@@ -789,7 +840,9 @@ export const CARD_LIST = [
     deck: null,
     damage: 0,
     hp: 2,
+    attack: 0,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
+    combatContextMenu: generateCombatContextMenu,
   },
   {
     id: 58,
@@ -821,7 +874,9 @@ export const CARD_LIST = [
     damage: 0,
     cost: 1,
     hp: 1,
+    attack: 1,
     contextMenu: [...DAMAGE_CONTEXT_MENU],
+    combatContextMenu: generateCombatContextMenu,
   },
   {
     id: 61,

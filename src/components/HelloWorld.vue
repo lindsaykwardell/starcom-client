@@ -80,62 +80,78 @@
     </div>
     <div class="flex-grow bg-black h-screen">
       <div v-if="shouldBoardDisplay" class="board relative">
-        <div class="flex justify-around mt-6">
-          <System
-            :system.sync="systems[0]"
-            group="board"
-            @explored="onExplore"
-          />
-        </div>
-        <div class="flex justify-around">
-          <System
-            :system.sync="systems[1]"
-            group="board"
-            @explored="onExplore"
-          />
-          <System
-            :system.sync="systems[2]"
-            group="board"
-            @explored="onExplore"
-          />
-        </div>
-        <div class="flex justify-between">
-          <System
-            :system.sync="systems[3]"
-            group="board"
-            @explored="onExplore"
-          />
-          <System
-            :system.sync="systems[4]"
-            group="board"
-            @explored="onExplore"
-          />
-          <System
-            :system.sync="systems[5]"
-            group="board"
-            @explored="onExplore"
-          />
-        </div>
-        <div class="flex justify-around">
-          <System
-            :system.sync="systems[6]"
-            group="board"
-            @explored="onExplore"
-          />
-          <System
-            :system.sync="systems[7]"
-            group="board"
-            @explored="onExplore"
-          />
-        </div>
-        <div class="flex justify-around">
-          <System
-            :system.sync="systems[8]"
-            group="board"
-            @explored="onExplore"
-          />
-        </div>
-        <button class="next-turn-button" @click="nextTurn">Pass Turn</button>
+        <template v-if="!showCombat">
+          <div class="flex justify-around mt-6">
+            <System
+              :system.sync="systems[0]"
+              group="board"
+              @explored="onExplore"
+            />
+          </div>
+          <div class="flex justify-around">
+            <System
+              :system.sync="systems[1]"
+              group="board"
+              @explored="onExplore"
+            />
+            <System
+              :system.sync="systems[2]"
+              group="board"
+              @explored="onExplore"
+            />
+          </div>
+          <div class="flex justify-between">
+            <System
+              :system.sync="systems[3]"
+              group="board"
+              @explored="onExplore"
+            />
+            <System
+              :system.sync="systems[4]"
+              group="board"
+              @explored="onExplore"
+            />
+            <System
+              :system.sync="systems[5]"
+              group="board"
+              @explored="onExplore"
+            />
+          </div>
+          <div class="flex justify-around">
+            <System
+              :system.sync="systems[6]"
+              group="board"
+              @explored="onExplore"
+            />
+            <System
+              :system.sync="systems[7]"
+              group="board"
+              @explored="onExplore"
+            />
+          </div>
+          <div class="flex justify-around">
+            <System
+              :system.sync="systems[8]"
+              group="board"
+              @explored="onExplore"
+            />
+          </div>
+        </template>
+        <template v-else>
+          <div class="flex justify-around items-center board-height">
+            <System
+              group="combat"
+              :system.sync="systems[combatSystemLoc]"
+              combat
+            />
+          </div>
+        </template>
+        <button
+          class="next-turn-button"
+          @click="showCombat ? endCombat() : nextTurn()"
+        >
+          {{ showCombat ? "End Combat" : "Pass Turn" }}
+        </button>
         <div class="active-player-stats flex">
           <div
             class="flex-1 mr-3 bg-red-400 p-1 rounded-lg duration-200"
@@ -181,11 +197,7 @@
       class="context-menu"
       :style="contextCoordinates"
     >
-      <div
-        v-for="option in contextCard.contextMenu"
-        :key="option.action"
-        class=""
-      >
+      <div v-for="option in currentContextMenu" :key="option.action" class="">
         <button
           v-if="
             !option.condition ||
@@ -194,6 +206,7 @@
                 system: systems[contextLoc],
                 activePlayer,
                 players,
+                inCombat: showCombat,
               })
           "
           class="hover:bg-gray-600 p-2 w-full text-left"
@@ -229,7 +242,9 @@ import {
   INDUSTRY,
   SCIENCE,
   TECHNOLOGY,
+  DAMAGEABLE,
   generateResolveContextMenu,
+  generateCombatContextMenu,
 } from "@/lib/core-v1";
 import Deck from "@/models/Deck";
 
@@ -244,6 +259,8 @@ export default {
       nextId: 0,
       dieValue: 0,
       showBoard: false,
+      showCombat: false,
+      combatSystemLoc: 0,
       showDiscard: false,
       showTechnology: false,
       showStack: false,
@@ -321,6 +338,17 @@ export default {
         return "pirates";
       }
     },
+    currentContextMenu() {
+      if (!this.showCombat || !this.contextCard.combatContextMenu) {
+        return this.contextCard.contextMenu;
+      } else {
+        return this.contextCard.combatContextMenu({
+          card: this.contextCard,
+          system: this.systems[this.combatSystemLoc],
+          players: this.players,
+        });
+      }
+    },
   },
   methods: {
     rollDie() {
@@ -380,6 +408,10 @@ export default {
       }
     },
     destroy(destroyedCard) {
+      if (destroyedCard.damageAssignedTo) {
+        this.unassignCombatDamage(destroyedCard)
+      }
+
       this.discard = [
         {
           ...destroyedCard,
@@ -485,14 +517,12 @@ export default {
                 this.stack = [
                   {
                     ...this.contextCard,
-                    contextMenu: generateResolveContextMenu(
-                      {
-                        card: this.contextCard,
-                        systems: this.systems,
-                        activePlayer: this.activePlayer,
-                        players: this.players,
-                      }
-                    ),
+                    contextMenu: generateResolveContextMenu({
+                      card: this.contextCard,
+                      systems: this.systems,
+                      activePlayer: this.activePlayer,
+                      players: this.players,
+                    }),
                   },
                   ...this.stack,
                 ];
@@ -551,13 +581,80 @@ export default {
               );
           }
           break;
+        case "combat":
+          this.showCombat = true;
+          this.combatSystemLoc = this.contextLoc;
+          break;
+        case "assign-damage":
+          this.assignCombatDamage(this.contextCard, parseInt(keys[1], 10))
+          break;
+        case "unassign-damage":
+          this.unassignCombatDamage(this.contextCard);
+          break;
         default:
         // Do nothing
       }
 
       this.showContextMenu = false;
     },
+    assignCombatDamage(attackingCard, targetId) {
+      Vue.set(attackingCard, "damageAssignedTo", targetId);
+      this.systems[this.combatSystemLoc].player1.forEach((card) => {
+        if (card.id === targetId) {
+          card.damage += attackingCard.attack;
+        }
+      });
+
+      this.systems[this.combatSystemLoc].player2.forEach((card) => {
+        if (card.id === targetId) {
+          card.damage += attackingCard.attack;
+        }
+      });
+    },
+    unassignCombatDamage(attackingCard) {
+      this.systems[this.combatSystemLoc].player1.forEach((card) => {
+        if (card.id === attackingCard.damageAssignedTo) {
+          card.damage -= attackingCard.attack;
+        }
+      });
+
+      this.systems[this.combatSystemLoc].player2.forEach((card) => {
+        if (card.id === attackingCard.damageAssignedTo) {
+          card.damage -= attackingCard.attack;
+        }
+      });
+
+      Vue.set(attackingCard, "damageAssignedTo", undefined);
+    },
+    endCombat() {
+      console.log("Fired!");
+      this.showCombat = false;
+
+      this.systems[this.combatSystemLoc].player1.forEach((card) => {
+        card.damageAssignedTo = undefined;
+      });
+
+      this.systems[this.combatSystemLoc].player2.forEach((card) => {
+        card.damageAssignedTo = undefined;
+      });
+
+      this.cleanUpDestroyedShips();
+    },
+    cleanUpDestroyedShips() {
+      this.systems.forEach((system) => {
+        system.player1.forEach((card) => {
+          if (card.damage >= card.hp) this.destroy(card);
+        });
+
+        system.player2.forEach((card) => {
+          if (card.damage >= card.hp) this.destroy(card);
+        });
+      });
+    },
     nextTurn() {
+      // Clean up destroyed ship
+      this.cleanUpDestroyedShips();
+
       // Conquest
       this.systems.forEach((system) => {
         if (
@@ -584,14 +681,6 @@ export default {
       // Check for "At start of turn" effects
       // Clean up destroyed ships/stations
       this.systems.forEach((system) => {
-        system.player1.forEach((card) => {
-          if (card.damage > card.hp) this.destroy(card);
-        });
-
-        system.player2.forEach((card) => {
-          if (card.damage > card.hp) this.destroy(card);
-        });
-
         if (
           system.card.controlledBy === this.activePlayer &&
           system.card.onTurnStart
@@ -699,6 +788,10 @@ export default {
   );
   height: calc(100vh - 175px);
   overflow: hidden;
+}
+
+.board-height {
+  height: calc(100vh - 175px);
 }
 
 .bar {
