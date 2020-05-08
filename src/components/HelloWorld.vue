@@ -157,8 +157,11 @@
             Credits: {{ players.player2.credits }}<br />
             Total Devlopments: {{ getPlayerDevelopmentCount("player2") }}
           </div>
-          <button class="p-2 bg-gray-700 hover:bg-gray-800 text-white ml-5 rounded-full duration-200 w-48" @click="showTechnology = !showTechnology">
-            Show {{showTechnology ? 'Hand' : "Technology"}}
+          <button
+            class="p-2 bg-gray-700 hover:bg-gray-800 text-white ml-5 rounded-full duration-200 w-48"
+            @click="showTechnology = !showTechnology"
+          >
+            Show {{ showTechnology ? "Hand" : "Technology" }}
           </button>
         </div>
         <div class="d20">
@@ -166,7 +169,10 @@
         </div>
       </div>
       <div class="hand" v-if="shouldBoardDisplay">
-        <DropZone :list.sync="showTechnology ? technology : hand" group="hand" />
+        <DropZone
+          :list.sync="showTechnology ? technology : hand"
+          group="hand"
+        />
       </div>
     </div>
     <div
@@ -239,7 +245,7 @@ export default {
       dieValue: 0,
       showBoard: false,
       showDiscard: false,
-      showTechnology: true,
+      showTechnology: false,
       showStack: false,
       showContextMenu: false,
       players: {
@@ -295,7 +301,7 @@ export default {
       },
     },
     technology() {
-      return this.players[this.activePlayer].technology
+      return this.players[this.activePlayer].technology;
     },
     nonActivePlayer() {
       return this.activePlayer === "player1" ? "player2" : "player1";
@@ -373,6 +379,26 @@ export default {
         alert("Too many cards in hand!");
       }
     },
+    destroy(destroyedCard) {
+      this.discard = [
+        {
+          ...destroyedCard,
+          contextMenu: [...DISCARD_CONTEXT_MENU],
+          damage: 0,
+        },
+        ...this.discard,
+      ];
+
+      this.systems.forEach((system) => {
+        system[this.activePlayer] = system[this.activePlayer].filter(
+          (card) => card.id !== destroyedCard.id
+        );
+
+        system[this.nonActivePlayer] = system[this.nonActivePlayer].filter(
+          (card) => card.id !== destroyedCard.id
+        );
+      });
+    },
     onClickout() {
       this.showContextMenu = false;
     },
@@ -444,24 +470,7 @@ export default {
             this.contextCard.damage - parseInt(keys[1], 10);
           break;
         case "destroy":
-          this.discard = [
-            {
-              ...this.contextCard,
-              contextMenu: [...DISCARD_CONTEXT_MENU],
-              damage: 0,
-            },
-            ...this.discard,
-          ];
-
-          this.systems.forEach((system) => {
-            system[this.activePlayer] = system[this.activePlayer].filter(
-              (card) => card.id !== this.contextCard.id
-            );
-
-            system[this.nonActivePlayer] = system[this.nonActivePlayer].filter(
-              (card) => card.id !== this.contextCard.id
-            );
-          });
+          this.destroy(this.contextCard);
           break;
         case "hand":
           switch (keys[1]) {
@@ -477,8 +486,12 @@ export default {
                   {
                     ...this.contextCard,
                     contextMenu: generateResolveContextMenu(
-                      this.systems,
-                      this.contextCard
+                      {
+                        card: this.contextCard,
+                        systems: this.systems,
+                        activePlayer: this.activePlayer,
+                        players: this.players,
+                      }
                     ),
                   },
                   ...this.stack,
@@ -545,6 +558,7 @@ export default {
       this.showContextMenu = false;
     },
     nextTurn() {
+      // Conquest
       this.systems.forEach((system) => {
         if (
           system.card.controlledBy === this.nonActivePlayer &&
@@ -556,14 +570,28 @@ export default {
         }
       });
 
+      // End of turn effects end.
+
+      // Next player
       this.activePlayer =
         this.activePlayer === "player1" ? "player2" : "player1";
 
+      // Gain credits
       this.players[
         this.activePlayer
       ].credits += this.activePlayerDevelopmentCount;
 
+      // Check for "At start of turn" effects
+      // Clean up destroyed ships/stations
       this.systems.forEach((system) => {
+        system.player1.forEach((card) => {
+          if (card.damage > card.hp) this.destroy(card);
+        });
+
+        system.player2.forEach((card) => {
+          if (card.damage > card.hp) this.destroy(card);
+        });
+
         if (
           system.card.controlledBy === this.activePlayer &&
           system.card.onTurnStart
@@ -587,6 +615,7 @@ export default {
         });
       });
 
+      // Roll the new turn die
       this.rollDie();
 
       let domain;
@@ -603,12 +632,10 @@ export default {
           break;
       }
 
+      // If it came up with a domain, draw a card if player has matching system
       if (domain) {
-        if (this.playerControlsDomain("player1", domain)) {
-          this.draw("player1", domain);
-        }
-        if (this.playerControlsDomain("player2", domain)) {
-          this.draw("player2", domain);
+        if (this.playerControlsDomain(this.activePlayer, domain)) {
+          this.draw(this.activePlayer, domain);
         }
       }
     },
