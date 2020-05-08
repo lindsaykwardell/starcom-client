@@ -789,6 +789,7 @@ export const CARD_LIST = [
     cost: 2,
     contextMenu: [],
     step: 0,
+    stepContext: {},
     stepContextMenu: [
       ({ systems, activePlayer }) => {
         let menu = [...RETURN_TO_HAND_CONTEXT_MENU];

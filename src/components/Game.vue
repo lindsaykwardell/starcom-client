@@ -286,8 +286,6 @@ export default {
         x: 0,
         y: 0,
       },
-      contextStep: 0,
-      contextStepResponse: {},
       hoveredCard: {
         img: "",
       },
@@ -342,8 +340,8 @@ export default {
     },
     currentContextMenu() {
       if (this.contextLoc === "stack" && this.contextCard.stepContextMenu) {
-        return this.contextCard.stepContextMenu[this.contextStep]({
-          ...this.contextStepResponse,
+        return this.contextCard.stepContextMenu[this.contextCard.step]({
+          ...this.contextCard.stepContext,
           card: this.contextCard,
           systems: this.systems,
           activePlayer: this.activePlayer,
@@ -595,12 +593,12 @@ export default {
 
           const result = option.stepAction();
           console.log(result);
-          this.contextStepResponse = {
-            ...this.contextStepResponse,
+          this.contextCard.stepContext = {
+            ...this.contextCard.stepContext,
             ...result,
           };
-          this.contextStep++;
-          if (this.contextCard.stepContextMenu.length <= this.contextStep) {
+          this.contextCard.step++;
+          if (this.contextCard.stepContextMenu.length <= this.contextCard.step) {
             this.resolveCardOnStack()
           }
           break;
@@ -611,6 +609,12 @@ export default {
       this.showContextMenu = false;
     },
     resolveCardOnStack() {
+      // Reset step data
+      if (this.contextCard.step) {
+        this.contextCard.step = 0
+        this.contextCard.stepContext = {}  
+      }
+      
       if (this.contextCard.type === TECHNOLOGY) {
         this.players[this.activePlayer].technology = [
           ...this.players[this.activePlayer].technology,
@@ -625,10 +629,6 @@ export default {
           ...this.discard,
         ];
       }
-
-      // Reset step data
-      this.contextStep = 0
-      this.contextStepResponse = {}
 
       this.stack = this.stack.filter((card) => card.id !== this.contextCard.id);
     },
