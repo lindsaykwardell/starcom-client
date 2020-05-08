@@ -57,7 +57,7 @@
               class="inline lg"
             />
           </Dialog>
-          <Card :card="stack[0]" class="md m-auto" />
+          <Card :card="stack[0]" class="md m-auto" loc="stack" />
         </div>
         <div class="flex-shrink relative">
           <Card
@@ -69,7 +69,7 @@
             class="horizontal-lg"
             :card="hoveredCard"
           />
-          <Card v-else class="lg" :card="hoveredCard" />
+          <Card v-else class="lg" :card="hoveredCard" loc="hover" />
           <DamageDice
             v-if="hoveredCard.damage"
             :damage="hoveredCard.damage"
@@ -210,7 +210,7 @@
               })
           "
           class="hover:bg-gray-600 p-2 w-full text-left"
-          @click="performAction(option.action)"
+          @click="performAction(option)"
         >
           {{ option.label }}
         </button>
@@ -286,6 +286,8 @@ export default {
         x: 0,
         y: 0,
       },
+      contextStep: 0,
+      contextStepResponse: {},
       hoveredCard: {
         img: "",
       },
@@ -339,6 +341,16 @@ export default {
       }
     },
     currentContextMenu() {
+      if (this.contextLoc === "stack" && this.contextCard.stepContextMenu) {
+        return this.contextCard.stepContextMenu[this.contextStep]({
+          ...this.contextStepResponse,
+          card: this.contextCard,
+          systems: this.systems,
+          activePlayer: this.activePlayer,
+          players: this.players,
+        });
+      }
+
       if (!this.showCombat || !this.contextCard.combatContextMenu) {
         return this.contextCard.contextMenu;
       } else {
@@ -409,7 +421,7 @@ export default {
     },
     destroy(destroyedCard) {
       if (destroyedCard.damageAssignedTo) {
-        this.unassignCombatDamage(destroyedCard)
+        this.unassignCombatDamage(destroyedCard);
       }
 
       this.discard = [
@@ -456,8 +468,8 @@ export default {
         });
       }
     },
-    performAction(action) {
-      const keys = action.split(":");
+    performAction(option) {
+      const keys = option.action.split(":");
       switch (keys[0]) {
         case "build":
           const card = { ...CARD_LIST.find((c) => c.id == keys[1]) };
@@ -561,24 +573,8 @@ export default {
               );
               break;
             case "resolve":
-              if (this.contextCard.type === TECHNOLOGY) {
-                this.players[this.activePlayer].technology = [
-                  ...this.players[this.activePlayer].technology,
-                  this.contextCard,
-                ];
-              } else {
-                this.discard = [
-                  {
-                    ...this.contextCard,
-                    contextMenu: [...DISCARD_CONTEXT_MENU],
-                  },
-                  ...this.discard,
-                ];
-              }
-
-              this.stack = this.stack.filter(
-                (card) => card.id !== this.contextCard.id
-              );
+              this.resolveCardOnStack()
+              break;
           }
           break;
         case "combat":
@@ -586,16 +582,55 @@ export default {
           this.combatSystemLoc = this.contextLoc;
           break;
         case "assign-damage":
-          this.assignCombatDamage(this.contextCard, parseInt(keys[1], 10))
+          this.assignCombatDamage(this.contextCard, parseInt(keys[1], 10));
           break;
         case "unassign-damage":
           this.unassignCombatDamage(this.contextCard);
+          break;
+        case "step":
+          // Perform the custom function in the step.
+          // Store the value in the contextStepResponse (merge all data together)
+          // Increment the step
+          // If it's the last step, run 'resolve'
+
+          const result = option.stepAction();
+          console.log(result);
+          this.contextStepResponse = {
+            ...this.contextStepResponse,
+            ...result,
+          };
+          this.contextStep++;
+          if (this.contextCard.stepContextMenu.length <= this.contextStep) {
+            this.resolveCardOnStack()
+          }
           break;
         default:
         // Do nothing
       }
 
       this.showContextMenu = false;
+    },
+    resolveCardOnStack() {
+      if (this.contextCard.type === TECHNOLOGY) {
+        this.players[this.activePlayer].technology = [
+          ...this.players[this.activePlayer].technology,
+          this.contextCard,
+        ];
+      } else {
+        this.discard = [
+          {
+            ...this.contextCard,
+            contextMenu: [...DISCARD_CONTEXT_MENU],
+          },
+          ...this.discard,
+        ];
+      }
+
+      // Reset step data
+      this.contextStep = 0
+      this.contextStepResponse = {}
+
+      this.stack = this.stack.filter((card) => card.id !== this.contextCard.id);
     },
     assignCombatDamage(attackingCard, targetId) {
       Vue.set(attackingCard, "damageAssignedTo", targetId);
@@ -679,7 +714,18 @@ export default {
       ].credits += this.activePlayerDevelopmentCount;
 
       // Check for "At start of turn" effects
-      // Clean up destroyed ships/stations
+
+      this.players[this.activePlayer].technology.forEach((technology) => {
+        if (technology.onTurnStart) {
+          technology.onTurnStart({
+            card: technology,
+            systems: this.systems,
+            activePlayer: this.activePlayer,
+            players: this.players,
+          });
+        }
+      });
+
       this.systems.forEach((system) => {
         if (
           system.card.controlledBy === this.activePlayer &&
@@ -688,6 +734,7 @@ export default {
           system.card.onTurnStart({
             card: system.card,
             system: system,
+            systems: this.systems,
             activePlayer: this.activePlayer,
             players: this.players,
           });
@@ -697,6 +744,7 @@ export default {
             card.onTurnStart({
               card: card,
               system: system,
+              systems: this.systems,
               activePlayer: this.activePlayer,
               players: this.players,
             });
@@ -762,7 +810,7 @@ export default {
     });
 
     EventBus.$on("card:context", ({ card, loc, event }) => {
-      this.toggleContextMenu(card, loc, event);
+      if (loc !== "hover") this.toggleContextMenu(card, loc, event);
     });
   },
   components: {

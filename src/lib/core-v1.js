@@ -788,6 +788,38 @@ export const CARD_LIST = [
     count: 4,
     cost: 2,
     contextMenu: [],
+    step: 0,
+    stepContextMenu: [
+      ({ systems, activePlayer }) => {
+        let menu = [...RETURN_TO_HAND_CONTEXT_MENU];
+        systems.forEach((system) => {
+          system[activePlayer].forEach((card) => {
+            if (card.damage > 0) {
+              menu.push({
+                label: `Target ${card.img} (${card.hp - card.damage}/${
+                  card.hp
+                })`,
+                action: "step:" + menu.length,
+                stepAction: () => {
+                  return { target: card };
+                }
+              });
+            }
+          });
+        });
+        return menu;
+      },
+      ({ target }) => [
+        {
+          label: `Repair ${target.img}`,
+          action: "step:" + 0,
+          stepAction: () => {
+            target.damage = 0;
+            return false;
+          },
+        },
+      ],
+    ],
   },
   {
     id: 53,
@@ -907,6 +939,18 @@ export const CARD_LIST = [
     count: 2,
     cost: 4,
     contextMenu: [],
+    onTurnStart: ({ systems, activePlayer, players }) => {
+      let total = 0;
+
+      systems.forEach((system) => {
+        if (system.card.controlledBy === activePlayer) total++;
+
+        total += system[activePlayer].filter((card) => card.type === STATION)
+          .length;
+      });
+
+      players[activePlayer].credits += total;
+    },
   },
   {
     id: 64,
