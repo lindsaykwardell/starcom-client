@@ -363,6 +363,7 @@ export const CARD_LIST = [
             });
           });
         });
+        return menu
       },
       ({ target, targetSystem, activePlayer, nonActivePlayer }) => [
         {
@@ -417,21 +418,12 @@ export const CARD_LIST = [
     step: 0,
     stepContext: {},
     stepContextMenu: [
-      ({ systems }) => {
+      ({ systems, nonActivePlayer }) => {
         let menu = [];
         systems.forEach((system) => {
-          system.player1.forEach((card) => {
+          system[nonActivePlayer].forEach((card) => {
             menu.push({
-              label: `Target ${card.img}`,
-              action: `step:${menu.length}`,
-              stepAction: () => {
-                return { target: card };
-              },
-            });
-          });
-          system.player2.forEach((card) => {
-            menu.push({
-              label: `Target ${card.img}`,
+              label: `Target ${card.img} in ${system.card.img}`,
               action: `step:${menu.length}`,
               stepAction: () => {
                 return { target: card, targetSystem: system };
@@ -1044,8 +1036,8 @@ export const CARD_LIST = [
     contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 4,
-    onTurnStart: () =>
-      alert("Research World: At the start of your turn, draw a card."),
+    // onTurnStart: () =>
+    //   alert("Research World: At the start of your turn, draw a card."),
   },
   {
     id: 54,
