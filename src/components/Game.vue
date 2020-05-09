@@ -347,6 +347,8 @@ export default {
           activePlayer: this.activePlayer,
           nonActivePlayer: this.nonActivePlayer,
           players: this.players,
+          discard: this.discard,
+          stack: this.stack,
         });
       }
 
@@ -419,6 +421,11 @@ export default {
       }
     },
     destroy(destroyedCard) {
+      if (destroyedCard.onDestroy) {
+        const shouldContinueToDestroy = destroyedCard.onDestroy();
+        if (!shouldContinueToDestroy) return;
+      }
+
       if (destroyedCard.damageAssignedTo) {
         this.unassignCombatDamage(destroyedCard);
       }
@@ -572,7 +579,7 @@ export default {
               );
               break;
             case "resolve":
-              this.resolveCardOnStack()
+              this.resolveCardOnStack();
               break;
           }
           break;
@@ -599,8 +606,10 @@ export default {
             ...result,
           };
           this.contextCard.step++;
-          if (this.contextCard.stepContextMenu.length <= this.contextCard.step) {
-            this.resolveCardOnStack()
+          if (
+            this.contextCard.stepContextMenu.length <= this.contextCard.step
+          ) {
+            this.resolveCardOnStack();
           }
           break;
         default:
@@ -612,8 +621,8 @@ export default {
     resolveCardOnStack() {
       // Reset step data
       if (this.contextCard.step) {
-        this.contextCard.step = 0
-        this.contextCard.stepContext = {}  
+        this.contextCard.step = 0;
+        this.contextCard.stepContext = {};
       }
 
       if (this.contextCard.type === TECHNOLOGY) {
@@ -707,6 +716,30 @@ export default {
       });
 
       // End of turn effects end.
+      this.systems.forEach((system) => {
+        system.player1.forEach((card) => {
+          if (card.onTurnEnd) {
+            card.onTurnEnd({
+              card,
+              system,
+              systems: this.systems,
+              activePlayer: this.activePlayer,
+              players: this.players,
+            });
+          }
+        });
+        system.player2.forEach((card) => {
+          if (card.onTurnEnd) {
+            card.onTurnEnd({
+              card,
+              system,
+              systems: this.systems,
+              activePlayer: this.activePlayer,
+              players: this.players,
+            });
+          }
+        });
+      });
 
       // Next player
       this.activePlayer =

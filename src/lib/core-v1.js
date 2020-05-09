@@ -301,17 +301,17 @@ export const CARD_LIST = [
         chosenSystem[nonActivePlayer].map((card, index) => ({
           label: `Target ${card.img} (${card.hp - card.damage}/${card.hp})`,
           action: `step:${index}`,
-          stepAction: () => ({target: card}),
+          stepAction: () => ({ target: card }),
         })),
-      ({ chosenCard, target}) => [
+      ({ chosenCard, target }) => [
         {
           label: `Deal ${chosenCard.attack} damage to ${target.img}`,
-          action: 'step:0',
+          action: "step:0",
           stepAction: () => {
-            target.damage += chosenCard.attack
-          }
-        }
-      ]
+            target.damage += chosenCard.attack;
+          },
+        },
+      ],
     ],
   },
   {
@@ -347,6 +347,40 @@ export const CARD_LIST = [
     count: 3,
     cost: 4,
     contextMenu: [],
+    step: 0,
+    stepContext: {},
+    stepContextMenu: [
+      ({ systems, nonActivePlayer }) => {
+        let menu = [];
+        systems.forEach((system) => {
+          system[nonActivePlayer].forEach((card) => {
+            menu.push({
+              label: `Target ${card.img} (${card.hp - card.damage}/${card.hp})`,
+              action: `step:${menu.length}`,
+              stepAction: () => {
+                return { target: card, targetSystem: system };
+              },
+            });
+          });
+        });
+      },
+      ({ target, targetSystem, activePlayer, nonActivePlayer }) => [
+        {
+          label: `Gain control of ${target.img}`,
+          action: "step:0",
+          stepAction: () => {
+            targetSystem[nonActivePlayer] = targetSystem[
+              nonActivePlayer
+            ].filter((card) => card.id !== target.id);
+
+            targetSystem[activePlayer] = [
+              ...targetSystem[activePlayer],
+              target,
+            ];
+          },
+        },
+      ],
+    ],
   },
   {
     id: 11,
@@ -380,6 +414,65 @@ export const CARD_LIST = [
     count: 4,
     cost: 2,
     contextMenu: [],
+    step: 0,
+    stepContext: {},
+    stepContextMenu: [
+      ({ systems }) => {
+        let menu = [];
+        systems.forEach((system) => {
+          system.player1.forEach((card) => {
+            menu.push({
+              label: `Target ${card.img}`,
+              action: `step:${menu.length}`,
+              stepAction: () => {
+                return { target: card };
+              },
+            });
+          });
+          system.player2.forEach((card) => {
+            menu.push({
+              label: `Target ${card.img}`,
+              action: `step:${menu.length}`,
+              stepAction: () => {
+                return { target: card, targetSystem: system };
+              },
+            });
+          });
+        });
+        return menu;
+      },
+      ({ target, targetSystem }) => [
+        {
+          label: `${target.img} cannot deal damage this turn.`,
+          action: "step:0",
+          stepAction: () => {
+            const atk = target.attack;
+
+            if (target.damageAssignedTo) {
+              targetSystem.player1.forEach((card) => {
+                if (card.id === target.damageAssignedTo) {
+                  card.damage -= target.attack;
+                }
+              });
+
+              targetSystem.player2.forEach((card) => {
+                if (card.id === target.damageAssignedTo) {
+                  card.damage -= target.attack;
+                }
+              });
+
+              target.damageAssignedTo = undefined;
+            }
+
+            target.attack = -1000;
+            target.onTurnEnd = () => {
+              target.attack = atk;
+              target.onTurnEnd = undefined;
+            };
+          },
+        },
+      ],
+    ],
   },
   {
     id: 14,
@@ -413,6 +506,41 @@ export const CARD_LIST = [
     count: 3,
     cost: 3,
     contextMenu: [],
+    step: 0,
+    stepContext: {},
+    stepContextMenu: [
+      ({ systems, activePlayer }) => {
+        let menu = [];
+        systems.forEach((system) => {
+          system[activePlayer].forEach((card) => {
+            if (card.attack > 0) {
+              menu.push({
+                label: `Choose ${card.img} (ATK: ${card.attack})`,
+                action: `step:${menu.length}`,
+                stepAction: () => {
+                  return { chosenCard: card, chosenSystem: system };
+                },
+              });
+            }
+          });
+        });
+        return menu;
+      },
+      ({ chosenCard }) => [
+        {
+          label: `Apply effect to ${chosenCard.img}`,
+          action: "step:0",
+          stepAction: () => {
+            chosenCard.onDestroy = () => {
+              // If true, destroy
+              // If false, don't.
+              chosenCard.damage = chosenCard.hp - 1;
+              return false;
+            };
+          },
+        },
+      ],
+    ],
   },
   {
     id: 17,
@@ -612,6 +740,18 @@ export const CARD_LIST = [
     count: 3,
     cost: 3,
     contextMenu: [],
+    step: 0,
+    stepContext: {},
+    stepContextMenu: [
+      ({ stack }) =>
+        stack.map((card, index) => ({
+          label: `Remove ${card.img} from the game`,
+          action: `step:${index}`,
+          stepAction: () => {
+            stack = stack.filter((c) => c.id !== card.id);
+          },
+        })),
+    ],
   },
   {
     id: 35,
@@ -798,6 +938,43 @@ export const CARD_LIST = [
     count: 4,
     cost: 2,
     contextMenu: [],
+    step: 0,
+    stepContext: {},
+    stepContextMenu: [
+      ({ systems, activePlayer }) => {
+        let menu = [];
+        systems.forEach((system) => {
+          system[activePlayer].forEach((card) => {
+            if (card.attack > 0) {
+              menu.push({
+                label: `Choose ${card.img} (HP: ${card.hp})`,
+                action: `step:${menu.length}`,
+                stepAction: () => {
+                  return { chosenCard: card, chosenSystem: system };
+                },
+              });
+            }
+          });
+        });
+        return menu;
+      },
+      ({ chosenCard, chosenSystem, nonActivePlayer }) =>
+        chosenSystem[nonActivePlayer].map((card, index) => ({
+          label: `Target ${card.img} (${card.hp - card.damage}/${card.hp})`,
+          action: `step:${index}`,
+          stepAction: () => ({ target: card }),
+        })),
+      ({ chosenCard, target }) => [
+        {
+          label: `Destroy ${chosenCard.img}. Deal ${chosenCard.hp} damage to ${target.img}`,
+          action: "step:0",
+          stepAction: () => {
+            target.damage += chosenCard.hp;
+            chosenCard.damage = chosenCard.hp;
+          },
+        },
+      ],
+    ],
   },
   {
     id: 51,
@@ -852,7 +1029,6 @@ export const CARD_LIST = [
           action: "step:" + 0,
           stepAction: () => {
             target.damage = 0;
-            return false;
           },
         },
       ],
@@ -880,6 +1056,34 @@ export const CARD_LIST = [
     count: 4,
     cost: 3,
     contextMenu: [],
+    step: 0,
+    stepContext: {},
+    stepContextMenu: [
+      ({ systems }) => {
+        let menu = [];
+        systems.forEach((system) => {
+          system.player1.forEach((card) => {
+            menu.push({
+              label: `Destroy ${card.img}`,
+              action: `step:${menu.length}`,
+              stepAction: () => {
+                card.damage = card.hp;
+              },
+            });
+          });
+          system.player2.forEach((card) => {
+            menu.push({
+              label: `Destroy ${card.img}`,
+              action: `step:${menu.length}`,
+              stepAction: () => {
+                card.damage = card.hp;
+              },
+            });
+          });
+        });
+        return menu;
+      },
+    ],
   },
   {
     id: 55,
@@ -933,6 +1137,29 @@ export const CARD_LIST = [
     count: 4,
     cost: 2,
     contextMenu: [],
+    step: 0,
+    stepContext: {},
+    stepContextMenu: [
+      ({ players, nonActivePlayer, discard }) =>
+        players[nonActivePlayer].hand.map((card, index) => ({
+          label: `${nonActivePlayer.charAt(0).toUpperCase() +
+            nonActivePlayer.slice(1)} discards ${card.img}`,
+          action: `step:${index}`,
+          stepAction: () => {
+            players[nonActivePlayer].hand = players[
+              nonActivePlayer
+            ].hand.filter((c) => c.id !== card.id);
+
+            discard = [
+              {
+                ...card,
+                contextMenu: [...DISCARD_CONTEXT_MENU],
+              },
+              ...discard,
+            ];
+          },
+        })),
+    ],
   },
   {
     id: 60,
@@ -956,6 +1183,24 @@ export const CARD_LIST = [
     count: 2,
     cost: 6,
     contextMenu: [],
+    step: 0,
+    stepContext: {},
+    stepContextMenu: [
+      ({ systems, activePlayer }) =>
+        systems
+          .filter((system) => system.controlledBy === activePlayer)
+          .map((system, index) => ({
+            label: `Target ${system.card.img}`,
+            action: `step:${index}`,
+            stepAction: () => ({
+              target: system,
+            }),
+          })),
+      ({ target }) => {
+        target.card.developmentLevel = 6;
+        target.card.onTurnStart = undefined;
+      },
+    ],
   },
   {
     id: 62,
