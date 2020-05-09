@@ -345,6 +345,7 @@ export default {
           card: this.contextCard,
           systems: this.systems,
           activePlayer: this.activePlayer,
+          nonActivePlayer: this.nonActivePlayer,
           players: this.players,
         });
       }
@@ -614,7 +615,7 @@ export default {
         this.contextCard.step = 0
         this.contextCard.stepContext = {}  
       }
-      
+
       if (this.contextCard.type === TECHNOLOGY) {
         this.players[this.activePlayer].technology = [
           ...this.players[this.activePlayer].technology,
@@ -631,6 +632,9 @@ export default {
       }
 
       this.stack = this.stack.filter((card) => card.id !== this.contextCard.id);
+
+      // Destroy any dead ships
+      this.cleanUpDestroyedShips();
     },
     assignCombatDamage(attackingCard, targetId) {
       Vue.set(attackingCard, "damageAssignedTo", targetId);

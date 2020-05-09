@@ -54,7 +54,6 @@ export default {
   },
   computed: {
     hasAssignedDamage() {
-      console.log("Changed")
       return this.combat && !!this.card.damageAssignedTo
         ? "assigned-damage"
         : "";
@@ -72,10 +71,10 @@ export default {
 
 <style lang="postcss" scoped>
 .assigned-damage {
-    @apply transform;
-    --transform-rotate: 10deg;
-    opacity: 0.5;
-  }
+  @apply transform;
+  --transform-rotate: 10deg;
+  opacity: 0.5;
+}
 
 .card {
   width: 125px;

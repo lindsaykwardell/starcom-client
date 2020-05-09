@@ -277,6 +277,42 @@ export const CARD_LIST = [
     count: 3,
     cost: 3,
     contextMenu: [],
+    step: 0,
+    stepContext: {},
+    stepContextMenu: [
+      ({ systems, activePlayer }) => {
+        let menu = [];
+        systems.forEach((system) => {
+          system[activePlayer].forEach((card) => {
+            if (card.attack > 0) {
+              menu.push({
+                label: `Choose ${card.img} (ATK: ${card.attack})`,
+                action: `step:${menu.length}`,
+                stepAction: () => {
+                  return { chosenCard: card, chosenSystem: system };
+                },
+              });
+            }
+          });
+        });
+        return menu;
+      },
+      ({ chosenCard, chosenSystem, nonActivePlayer }) =>
+        chosenSystem[nonActivePlayer].map((card, index) => ({
+          label: `Target ${card.img} (${card.hp - card.damage}/${card.hp})`,
+          action: `step:${index}`,
+          stepAction: () => ({target: card}),
+        })),
+      ({ chosenCard, target}) => [
+        {
+          label: `Deal ${chosenCard.attack} damage to ${target.img}`,
+          action: 'step:0',
+          stepAction: () => {
+            target.damage += chosenCard.attack
+          }
+        }
+      ]
+    ],
   },
   {
     id: 8,
@@ -803,7 +839,7 @@ export const CARD_LIST = [
                 action: "step:" + menu.length,
                 stepAction: () => {
                   return { target: card };
-                }
+                },
               });
             }
           });
