@@ -81,8 +81,8 @@ export default {
   height: 175px;
 
   &.horizontal {
-    width: 200px;
-    height: 150px;
+    width: 140px;
+    height: 100px;
   }
 
   &.horizontal-lg {

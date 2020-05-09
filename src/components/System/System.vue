@@ -13,16 +13,17 @@
     <div class="relative">
       <Card
         :class="combat ? 'horizontal-lg' : 'horizontal'"
-        :card="system.card.explored ? system.card : undefined"
+        x:card="system.card.explored ? system.card : undefined"
+        :card="system.card"
       />
       <div v-if="system.card.developmentLevel > 0" class="development-die">
-        <font-awesome size="3x" :icon="['fa', dice]" :class="dieColor" />
+        <font-awesome size="2x" :icon="['fa', dice]" :class="dieColor" />
       </div>
     </div>
     <DropZone
       class="dropzone bottom"
       x:cardClass="player1.length > 5 ? 'xs' : 'sm'"
-      :cardClass="combat ? '' : 'xs'"
+      :cardClass="combat ? player1.length > 5 ? 'sm' : '' : 'xs'"
       :list.sync="player1"
       :group="`player1-${group}`"
       :loc="system.card.loc"
@@ -144,6 +145,10 @@ export default {
   &.bottom {
     bottom: -25px;
   }
+
+  &.combat {
+    width: 100vw;
+  }
 }
 
 .development-die {
@@ -151,7 +156,7 @@ export default {
   padding: 5px;
   background: white;
   position: absolute;
-  top: 30px;
-  left: 20px;
+  top: 20px;
+  left: 10px;
 }
 </style>

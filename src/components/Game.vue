@@ -88,7 +88,7 @@
               @explored="onExplore"
             />
           </div>
-          <div class="flex justify-around">
+          <div class="flex justify-around  w-4/5 m-auto">
             <System
               :system.sync="systems[1]"
               group="board"
@@ -100,7 +100,7 @@
               @explored="onExplore"
             />
           </div>
-          <div class="flex justify-between">
+          <div class="flex justify-around">
             <System
               :system.sync="systems[3]"
               group="board"
@@ -117,7 +117,7 @@
               @explored="onExplore"
             />
           </div>
-          <div class="flex justify-around">
+          <div class="flex justify-between">
             <System
               :system.sync="systems[6]"
               group="board"
@@ -128,10 +128,49 @@
               group="board"
               @explored="onExplore"
             />
+            <System
+              :system.sync="systems[8]"
+              group="board"
+              @explored="onExplore"
+            />
+            <System
+              :system.sync="systems[9]"
+              group="board"
+              @explored="onExplore"
+            />
           </div>
           <div class="flex justify-around">
             <System
-              :system.sync="systems[8]"
+              :system.sync="systems[10]"
+              group="board"
+              @explored="onExplore"
+            />
+            <System
+              :system.sync="systems[11]"
+              group="board"
+              @explored="onExplore"
+            />
+            <System
+              :system.sync="systems[12]"
+              group="board"
+              @explored="onExplore"
+            />
+          </div>
+          <div class="flex justify-around w-4/5 m-auto">
+            <System
+              :system.sync="systems[13]"
+              group="board"
+              @explored="onExplore"
+            />
+            <System
+              :system.sync="systems[14]"
+              group="board"
+              @explored="onExplore"
+            />
+          </div>
+          <div class="flex justify-around">
+            <System
+              :system.sync="systems[15]"
               group="board"
               @explored="onExplore"
             />
@@ -353,7 +392,7 @@ export default {
       }
 
       if (!this.showCombat || !this.contextCard.combatContextMenu) {
-        return this.contextCard.contextMenu;
+        // return this.contextCard.contextMenu;
       } else {
         return this.contextCard.combatContextMenu({
           card: this.contextCard,
@@ -361,6 +400,20 @@ export default {
           players: this.players,
         });
       }
+
+      if (this.contextCard.buildShipContextMenu) {
+        return [
+          ...this.contextCard.contextMenu,
+          ...this.contextCard.buildShipContextMenu({
+            card: this.contextCard,
+            activePlayer: this.activePlayer,
+            players: this.players,
+            systems: this.systems
+          }),
+        ];
+      }
+
+      return this.contextCard.contextMenu;
     },
   },
   methods: {
@@ -484,7 +537,11 @@ export default {
               ...this.systems[this.contextLoc][this.activePlayer],
               { ...card, id: this.getNextId() },
             ];
-            this.players[this.activePlayer].credits -= card.cost;
+            if (option.cost) {
+              this.players[this.activePlayer].credits -= option.cost
+            } else {
+              this.players[this.activePlayer].credits -= card.cost
+            }
           }
           break;
         case "build-in":
@@ -518,6 +575,8 @@ export default {
         case "repair":
           this.contextCard.damage =
             this.contextCard.damage - parseInt(keys[1], 10);
+
+            this.players[this.activePlayer].credits -= 2
           break;
         case "destroy":
           this.destroy(this.contextCard);
@@ -816,10 +875,10 @@ export default {
   },
   mounted() {
     const systems = [];
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 16; i++) {
       systems.push({
         card:
-          i === 0 || i === 8
+          i === 0 || i === 15
             ? {
                 ...HOMEWORLD,
                 loc: i,
@@ -834,8 +893,8 @@ export default {
 
     systems[0].player2.push({ ...SCOUT, id: this.getNextId() });
     systems[0].card.explored = true;
-    systems[8].player1.push({ ...SCOUT, id: this.getNextId() });
-    systems[8].card.explored = true;
+    systems[15].player1.push({ ...SCOUT, id: this.getNextId() });
+    systems[15].card.explored = true;
 
     this.systems = systems;
     this.showBoard = true;

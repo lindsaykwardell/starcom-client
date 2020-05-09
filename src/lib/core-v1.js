@@ -24,6 +24,10 @@ export const CARD_TYPES = [
   TECHNOLOGY,
 ];
 
+export const SMALL = "Small";
+export const MEDIUM = "Medium";
+export const LARGE = "Large";
+
 export const DAMAGEABLE = [SHIP, FIGHTER, STATION];
 
 export const HAND_CONTEXT_MENU = [
@@ -91,13 +95,56 @@ export const DAMAGE_CONTEXT_MENU = [
   {
     action: "repair:1",
     label: "Repair 1 damage",
-    condition: ({ card, inCombat }) => card.damage > 0 && inCombat === false,
+    condition: ({ card, inCombat, players, activePlayer }) =>
+      card.damage > 0 &&
+      inCombat === false &&
+      players[activePlayer].credits >= 2,
   },
   {
     action: "destroy",
     label: "Destroy this",
   },
 ];
+
+const SHIP_ID_LIST = [15, 18, 28, 8, 41, 11, 19];
+
+const generateBuildShipContextMenu = ({
+  card,
+  systems,
+  activePlayer,
+  players,
+}) =>
+  SHIP_ID_LIST.map((id) => {
+    const ship = CARD_LIST.find((c) => c.id === id);
+
+    let cost = ship.cost;
+
+    systems.forEach((system) => {
+      if (
+        system.card.controlledBy === activePlayer &&
+        system.card.buildCostModifier
+      ) {
+        cost = system.card.buildCostModifier({ card: ship, cost });
+      }
+    });
+
+    if (cost < 1) cost = 1;
+
+    players[activePlayer].technology.forEach((technology) => {
+      if (technology.buildCostModifier) {
+        cost = technology.buildCostModifier({ card: ship, cost });
+      }
+    });
+
+    return {
+      action: `build:${id}`,
+      label: `Build ${ship.img} (${cost} credits)`,
+      condition: ({ card, system, activePlayer, players }) =>
+        card.controlledBy === activePlayer &&
+        players[activePlayer].credits >= cost,
+      cost,
+    };
+  });
 
 const SHIP_CONTEXT_MENU = [
   {
@@ -318,6 +365,7 @@ export const CARD_LIST = [
     id: 8,
     img: "Battlecruiser",
     type: SHIP,
+    subtype: MEDIUM,
     domain: null,
     deck: null,
     damage: 0,
@@ -363,7 +411,7 @@ export const CARD_LIST = [
             });
           });
         });
-        return menu
+        return menu;
       },
       ({ target, targetSystem, activePlayer, nonActivePlayer }) => [
         {
@@ -387,6 +435,7 @@ export const CARD_LIST = [
     id: 11,
     img: "Carrier",
     type: SHIP,
+    subtype: LARGE,
     domain: null,
     deck: null,
     damage: 0,
@@ -480,6 +529,7 @@ export const CARD_LIST = [
     id: 15,
     img: "Corvette",
     type: SHIP,
+    subtype: SMALL,
     domain: null,
     deck: null,
     damage: 0,
@@ -551,6 +601,7 @@ export const CARD_LIST = [
     id: 18,
     img: "Destroyer",
     type: SHIP,
+    subtype: SMALL,
     domain: null,
     deck: null,
     damage: 0,
@@ -564,6 +615,7 @@ export const CARD_LIST = [
     id: 19,
     img: "Dreadnought",
     type: SHIP,
+    subtype: LARGE,
     domain: null,
     deck: null,
     damage: 0,
@@ -660,6 +712,7 @@ export const CARD_LIST = [
     id: 28,
     img: "Frigate",
     type: SHIP,
+    subtype: SMALL,
     domain: null,
     deck: null,
     damage: 0,
@@ -687,9 +740,10 @@ export const CARD_LIST = [
     deck: null,
     contextMenu: [
       ...SYSTEM_CONTEXT_MENU,
-      ...SHIP_CONTEXT_MENU,
+      // ...SHIP_CONTEXT_MENU,
       ...STATION_CONTEXT_MENU,
     ],
+    buildShipContextMenu: generateBuildShipContextMenu,
     developmentLevel: 1,
     maxDevelopmentLevel: 6,
   },
@@ -712,6 +766,11 @@ export const CARD_LIST = [
     count: 3,
     cost: 4,
     contextMenu: [],
+    buildCostModifier: ({ cost, card }) => {
+      if (card.type === SHIP && [MEDIUM, LARGE].includes(card.subtype))
+        return cost - 1;
+      else return cost;
+    },
   },
   {
     id: 33,
@@ -814,6 +873,7 @@ export const CARD_LIST = [
     id: 41,
     img: "Missile_Cruiser",
     type: SHIP,
+    subtype: MEDIUM,
     domain: null,
     deck: null,
     damage: 0,
@@ -899,6 +959,11 @@ export const CARD_LIST = [
     contextMenu: [...SYSTEM_CONTEXT_MENU, ...STATION_CONTEXT_MENU],
     developmentLevel: 0,
     maxDevelopmentLevel: 4,
+    buildCostModifier: ({ cost, card }) => {
+      if ([MEDIUM, LARGE].includes(card.subtype)) return cost - 2;
+      else if (card.subtype === SMALL || card.type === STATION) return cost - 1;
+      else return cost;
+    },
   },
   {
     id: 48,
@@ -1101,6 +1166,7 @@ export const CARD_LIST = [
     id: 57,
     img: "Scout",
     type: SHIP,
+    subtype: SMALL,
     domain: null,
     deck: null,
     damage: 0,
@@ -1156,7 +1222,8 @@ export const CARD_LIST = [
   {
     id: 60,
     img: "Strike_Fighter",
-    type: FIGHTER,
+    type: SHIP,
+    subtype: FIGHTER,
     domain: null,
     deck: null,
     damage: 0,
@@ -1180,7 +1247,7 @@ export const CARD_LIST = [
     stepContextMenu: [
       ({ systems, activePlayer }) =>
         systems
-          .filter((system) => system.controlledBy === activePlayer)
+          .filter((system) => system.card.controlledBy === activePlayer)
           .map((system, index) => ({
             label: `Target ${system.card.img}`,
             action: `step:${index}`,
@@ -1188,10 +1255,14 @@ export const CARD_LIST = [
               target: system,
             }),
           })),
-      ({ target }) => {
-        target.card.developmentLevel = 6;
-        target.card.onTurnStart = undefined;
-      },
+      ({ target }) => ({
+        label: `Apply effect to ${target.img}`,
+        action: "step:0",
+        stepAction: () => {
+          target.card.developmentLevel = 6;
+          target.card.onTurnStart = undefined;
+        },
+      }),
     ],
   },
   {
