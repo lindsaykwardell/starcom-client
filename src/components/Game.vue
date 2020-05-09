@@ -290,9 +290,8 @@ import Deck from "@/models/Deck";
 import EventBus from "@/util/EventBus";
 
 export default {
-  name: "two-lists",
-  display: "Two Lists",
-  order: 1,
+  name: "game",
+  display: "Game",
   data() {
     return {
       nextId: 0,
