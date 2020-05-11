@@ -28,4 +28,8 @@ export default class Deck {
   draw() {
     return this.deck.pop()
   }
+
+  sync(deck) {
+    this.deck = deck
+  }
 }

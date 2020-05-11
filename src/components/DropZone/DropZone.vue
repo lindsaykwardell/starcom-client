@@ -5,6 +5,7 @@
     ghost-class="ghost"
     chosen-class="chosen"
     drag-class="drag"
+    @end="$emit('end', $event)"
   >
     <div
       role="card-list"

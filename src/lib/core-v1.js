@@ -555,15 +555,13 @@ export const CARD_LIST = [
         let menu = [];
         systems.forEach((system) => {
           system[activePlayer].forEach((card) => {
-            if (card.attack > 0) {
-              menu.push({
-                label: `Choose ${card.img} (ATK: ${card.attack})`,
-                action: `step:${menu.length}`,
-                stepAction: () => {
-                  return { chosenCard: card, chosenSystem: system };
-                },
-              });
-            }
+            menu.push({
+              label: `Choose ${card.img}`,
+              action: `step:${menu.length}`,
+              stepAction: () => {
+                return { chosenCard: card, chosenSystem: system };
+              },
+            });
           });
         });
         return menu;
@@ -999,18 +997,17 @@ export const CARD_LIST = [
     stepContext: {},
     stepContextMenu: [
       ({ systems, activePlayer }) => {
+        console.log(activePlayer);
         let menu = [];
         systems.forEach((system) => {
           system[activePlayer].forEach((card) => {
-            if (card.attack > 0) {
-              menu.push({
-                label: `Choose ${card.img} (HP: ${card.hp})`,
-                action: `step:${menu.length}`,
-                stepAction: () => {
-                  return { chosenCard: card, chosenSystem: system };
-                },
-              });
-            }
+            menu.push({
+              label: `Choose ${card.img} (HP: ${card.hp})`,
+              action: `step:${menu.length}`,
+              stepAction: () => {
+                return { chosenCard: card, chosenSystem: system };
+              },
+            });
           });
         });
         return menu;
@@ -1048,6 +1045,9 @@ export const CARD_LIST = [
     onTurnStart: ({ card, system, activePlayer, players }) =>
       (players[activePlayer].credits += 2),
     combatContextMenu: generateCombatContextMenu,
+    step: 0,
+    stepContext: {},
+    stepContextMenu: [generateResolveContextMenu],
   },
   {
     id: 52,
@@ -1239,7 +1239,7 @@ export const CARD_LIST = [
     type: COMMAND,
     domain: INDUSTRY,
     deck: INDUSTRY,
-    count: 2,
+    count: 30,
     cost: 6,
     contextMenu: [],
     step: 0,
@@ -1251,18 +1251,23 @@ export const CARD_LIST = [
           .map((system, index) => ({
             label: `Target ${system.card.img}`,
             action: `step:${index}`,
-            stepAction: () => ({
-              target: system,
-            }),
+            stepAction: () => {
+              return {
+                target: system,
+              };
+            },
           })),
-      ({ target }) => ({
-        label: `Apply effect to ${target.img}`,
-        action: "step:0",
-        stepAction: () => {
-          target.card.developmentLevel = 6;
-          target.card.onTurnStart = undefined;
+      ({ target }) => [
+        {
+          label: `Apply effect to ${target.card.img}`,
+          action: "step:0",
+          stepAction: () => {
+            target.card.developmentLevel = 6;
+            target.card.onTurnStart = undefined;
+            target.card.buildCostModifier = undefined;
+          },
         },
-      }),
+      ],
     ],
   },
   {
@@ -1359,3 +1364,23 @@ export const DECK_SYSTEM = CARD_LIST.filter(
 }, []);
 
 export const SCOUT = CARD_LIST.find((card) => card.id === 57);
+
+export const mapCard = (card) => {
+  const c = CARD_LIST.find((c) => c.img === card.img);
+
+  return {
+    ...card,
+    ...c,
+    developmentLevel: card.developmentLevel,
+    damage: card.damage,
+    id: card.id,
+    step: card.step,
+    stepContext: card.stepContext,
+    onTurnStart:
+      card.onTurnStart === undefined ? card.onTurnStart : c.onTurnStart,
+    buildCostModifier:
+      card.buildCostModifier === undefined
+        ? card.buildCostModifier
+        : c.buildCostModifier,
+  };
+};

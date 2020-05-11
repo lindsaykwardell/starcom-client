@@ -8,19 +8,19 @@
               class="p-1 bg-blue-400 hover:bg-blue-600 duration-200 flex-1"
               @click="draw(activePlayer, decks.politics)"
             >
-              Politics ({{ decks.politics.remaining }}/40)
+              Politics ({{ decks.politics.length }}/40)
             </button>
             <button
               class="p-1 bg-red-400 hover:bg-red-600 duration-200 flex-1"
               @click="draw(activePlayer, decks.industry)"
             >
-              Industry ({{ decks.industry.remaining }}/40)
+              Industry ({{ decks.industry.length }}/40)
             </button>
             <button
               class="p-1 bg-green-400 hover:bg-green-600 duration-200 flex-1"
               @click="draw(activePlayer, decks.science)"
             >
-              Science ({{ decks.science.remaining }}/40)
+              Science ({{ decks.science.length }}/40)
             </button>
           </div>
 
@@ -79,10 +79,11 @@
       </div>
     </div>
     <div class="flex-grow bg-black h-screen">
-      <div v-if="shouldBoardDisplay" class="board relative">
+      <div v-if="shouldBoardDisplay && systems" class="board relative">
         <template v-if="!showCombat">
           <div class="flex justify-around mt-6">
             <System
+              @move:ship="sync"
               :system.sync="systems[0]"
               group="board"
               @explored="onExplore"
@@ -90,11 +91,13 @@
           </div>
           <div class="flex justify-around  w-4/5 m-auto">
             <System
+              @move:ship="sync"
               :system.sync="systems[1]"
               group="board"
               @explored="onExplore"
             />
             <System
+              @move:ship="sync"
               :system.sync="systems[2]"
               group="board"
               @explored="onExplore"
@@ -102,16 +105,19 @@
           </div>
           <div class="flex justify-around">
             <System
+              @move:ship="sync"
               :system.sync="systems[3]"
               group="board"
               @explored="onExplore"
             />
             <System
+              @move:ship="sync"
               :system.sync="systems[4]"
               group="board"
               @explored="onExplore"
             />
             <System
+              @move:ship="sync"
               :system.sync="systems[5]"
               group="board"
               @explored="onExplore"
@@ -119,21 +125,25 @@
           </div>
           <div class="flex justify-between">
             <System
+              @move:ship="sync"
               :system.sync="systems[6]"
               group="board"
               @explored="onExplore"
             />
             <System
+              @move:ship="sync"
               :system.sync="systems[7]"
               group="board"
               @explored="onExplore"
             />
             <System
+              @move:ship="sync"
               :system.sync="systems[8]"
               group="board"
               @explored="onExplore"
             />
             <System
+              @move:ship="sync"
               :system.sync="systems[9]"
               group="board"
               @explored="onExplore"
@@ -141,16 +151,19 @@
           </div>
           <div class="flex justify-around">
             <System
+              @move:ship="sync"
               :system.sync="systems[10]"
               group="board"
               @explored="onExplore"
             />
             <System
+              @move:ship="sync"
               :system.sync="systems[11]"
               group="board"
               @explored="onExplore"
             />
             <System
+              @move:ship="sync"
               :system.sync="systems[12]"
               group="board"
               @explored="onExplore"
@@ -158,11 +171,13 @@
           </div>
           <div class="flex justify-around w-4/5 m-auto">
             <System
+              @move:ship="sync"
               :system.sync="systems[13]"
               group="board"
               @explored="onExplore"
             />
             <System
+              @move:ship="sync"
               :system.sync="systems[14]"
               group="board"
               @explored="onExplore"
@@ -170,6 +185,7 @@
           </div>
           <div class="flex justify-around">
             <System
+              @move:ship="sync"
               :system.sync="systems[15]"
               group="board"
               @explored="onExplore"
@@ -179,6 +195,7 @@
         <template v-else>
           <div class="flex justify-around items-center board-height">
             <System
+              @move:ship="sync"
               group="combat"
               :system.sync="systems[combatSystemLoc]"
               combat
@@ -284,20 +301,26 @@ import {
   DAMAGEABLE,
   generateResolveContextMenu,
   generateCombatContextMenu,
+  mapCard,
 } from "@/lib/core-v1";
 import Deck from "@/models/Deck";
 
 import EventBus from "@/util/EventBus";
+
+const PLAYER_1 = "player1";
+const PLAYER_2 = "player2";
 
 export default {
   name: "game",
   display: "Game",
   data() {
     return {
+      me: PLAYER_2,
       nextId: 0,
       dieValue: 0,
-      showBoard: false,
+      showBoard: true,
       showCombat: false,
+      isSyncingFromServer: false,
       combatSystemLoc: 0,
       showDiscard: false,
       showTechnology: false,
@@ -306,18 +329,16 @@ export default {
       players: {
         player1: {
           credits: 0,
-          technology: [],
           hand: [],
           technology: [],
         },
         player2: {
           credits: 0,
-          technology: [],
           hand: [],
           technology: [],
         },
       },
-      activePlayer: "player1",
+      activePlayer: PLAYER_1,
       contextCard: null,
       contextLoc: 0,
       contextCoordinates: {
@@ -331,14 +352,17 @@ export default {
       discard: [],
       stack: [],
       decks: {
-        politics: new Deck(DECK_POLITICS),
-        industry: new Deck(DECK_INDUSTRY),
-        science: new Deck(DECK_SCIENCE),
-        system: new Deck(DECK_SYSTEM),
+        politics: [],
+        industry: [],
+        science: [],
+        system: [],
       },
     };
   },
   computed: {
+    hotseatMode() {
+      return this.$store.state.gameId === null
+    },
     shouldBoardDisplay() {
       return this.showBoard && !this.showDiscard && !this.showStack;
     },
@@ -349,17 +373,20 @@ export default {
     },
     hand: {
       get() {
-        return this.players[this.activePlayer].hand;
+        return this.players[this.me].hand;
       },
       set(val) {
-        this.players[this.activePlayer].hand = val;
+        this.players[this.me].hand = val;
       },
     },
     technology() {
-      return this.players[this.activePlayer].technology;
+      return this.players[this.me].technology;
     },
     nonActivePlayer() {
-      return this.activePlayer === "player1" ? "player2" : "player1";
+      return this.me === PLAYER_1 ? PLAYER_2 : PLAYER_1;
+    },
+    notMe() {
+      return this.me === PLAYER_1 ? PLAYER_2 : PLAYER_1;
     },
     dieRoll() {
       console.log(this.dieValue);
@@ -377,17 +404,24 @@ export default {
       }
     },
     currentContextMenu() {
+      console.log(this.contextCard);
       if (this.contextLoc === "stack" && this.contextCard.stepContextMenu) {
-        return this.contextCard.stepContextMenu[this.contextCard.step]({
+        const stepMenu = this.contextCard.stepContextMenu[
+          this.contextCard.step
+        ]({
           ...this.contextCard.stepContext,
           card: this.contextCard,
           systems: this.systems,
-          activePlayer: this.activePlayer,
-          nonActivePlayer: this.nonActivePlayer,
+          activePlayer: this.me,
+          nonActivePlayer: this.notMe,
           players: this.players,
           discard: this.discard,
           stack: this.stack,
         });
+
+        console.log(stepMenu);
+
+        return stepMenu;
       }
 
       if (!this.showCombat || !this.contextCard.combatContextMenu) {
@@ -405,9 +439,9 @@ export default {
           ...this.contextCard.contextMenu,
           ...this.contextCard.buildShipContextMenu({
             card: this.contextCard,
-            activePlayer: this.activePlayer,
+            activePlayer: this.me,
             players: this.players,
-            systems: this.systems
+            systems: this.systems,
           }),
         ];
       }
@@ -456,7 +490,7 @@ export default {
       }
 
       if (this.players[player].hand.length < 8) {
-        const nextCard = deck.draw();
+        const nextCard = deck.pop();
         this.players[player].hand = [
           ...this.players[player].hand,
           {
@@ -468,6 +502,8 @@ export default {
             ],
           },
         ];
+
+        this.sync();
       } else {
         alert("Too many cards in hand!");
       }
@@ -492,14 +528,16 @@ export default {
       ];
 
       this.systems.forEach((system) => {
-        system[this.activePlayer] = system[this.activePlayer].filter(
+        system[this.me] = system[this.me].filter(
           (card) => card.id !== destroyedCard.id
         );
 
-        system[this.nonActivePlayer] = system[this.nonActivePlayer].filter(
+        system[this.notMe] = system[this.notMe].filter(
           (card) => card.id !== destroyedCard.id
         );
       });
+
+      this.sync();
     },
     onClickout() {
       this.showContextMenu = false;
@@ -521,10 +559,12 @@ export default {
         card.onExplore({
           card,
           system: this.systems[card.loc],
-          activePlayer: this.activePlayer,
+          activePlayer: this.me,
           players: this.players,
         });
       }
+
+      this.sync();
     },
     performAction(option) {
       const keys = option.action.split(":");
@@ -532,20 +572,20 @@ export default {
         case "build":
           const card = { ...CARD_LIST.find((c) => c.id == keys[1]) };
           if (card) {
-            this.systems[this.contextLoc][this.activePlayer] = [
-              ...this.systems[this.contextLoc][this.activePlayer],
+            this.systems[this.contextLoc][this.me] = [
+              ...this.systems[this.contextLoc][this.me],
               { ...card, id: this.getNextId() },
             ];
             if (option.cost) {
-              this.players[this.activePlayer].credits -= option.cost
+              this.players[this.me].credits -= option.cost;
             } else {
-              this.players[this.activePlayer].credits -= card.cost
+              this.players[this.me].credits -= card.cost;
             }
           }
           break;
         case "build-in":
-          this.systems[keys[1]][this.activePlayer] = [
-            ...this.systems[keys[1]][this.activePlayer],
+          this.systems[keys[1]][this.me] = [
+            ...this.systems[keys[1]][this.me],
             { ...this.contextCard, contextMenu: [...DAMAGE_CONTEXT_MENU] },
           ];
 
@@ -554,7 +594,7 @@ export default {
           );
           break;
         case "develop":
-          this.contextCard.controlledBy = this.activePlayer;
+          this.contextCard.controlledBy = this.me;
 
           if (
             this.contextCard.developmentLevel <
@@ -562,7 +602,7 @@ export default {
           ) {
             let cost = this.systems[this.contextLoc].card.developmentLevel * 2;
             if (cost === 0) cost = 1;
-            this.players[this.activePlayer].credits -= cost;
+            this.players[this.me].credits -= cost;
             this.systems[this.contextLoc].card.developmentLevel++;
           }
 
@@ -575,7 +615,7 @@ export default {
           this.contextCard.damage =
             this.contextCard.damage - parseInt(keys[1], 10);
 
-            this.players[this.activePlayer].credits -= 2
+          this.players[this.me].credits -= 2;
           break;
         case "destroy":
           this.destroy(this.contextCard);
@@ -583,12 +623,8 @@ export default {
         case "hand":
           switch (keys[1]) {
             case "play":
-              if (
-                this.players[this.activePlayer].credits >= this.contextCard.cost
-              ) {
-                this.players[
-                  this.activePlayer
-                ].credits -= this.contextCard.cost;
+              if (this.players[this.me].credits >= this.contextCard.cost) {
+                this.players[this.me].credits -= this.contextCard.cost;
 
                 this.stack = [
                   {
@@ -596,16 +632,16 @@ export default {
                     contextMenu: generateResolveContextMenu({
                       card: this.contextCard,
                       systems: this.systems,
-                      activePlayer: this.activePlayer,
+                      activePlayer: this.me,
                       players: this.players,
                     }),
                   },
                   ...this.stack,
                 ];
 
-                this.players[this.activePlayer].hand = this.players[
-                  this.activePlayer
-                ].hand.filter((card) => card.id !== this.contextCard.id);
+                this.players[this.me].hand = this.players[this.me].hand.filter(
+                  (card) => card.id !== this.contextCard.id
+                );
               } else {
                 alert("You don't have enough credits!");
               }
@@ -617,17 +653,17 @@ export default {
                 ...this.discard,
               ];
 
-              this.players[this.activePlayer].hand = this.players[
-                this.activePlayer
-              ].hand.filter((card) => card.id !== this.contextCard.id);
+              this.players[this.me].hand = this.players[this.me].hand.filter(
+                (card) => card.id !== this.contextCard.id
+              );
               break;
             case "return":
-              this.players[this.activePlayer].hand = [
-                ...this.players[this.activePlayer].hand,
+              this.players[this.me].hand = [
+                ...this.players[this.me].hand,
                 { ...this.contextCard, contextMenu: [...HAND_CONTEXT_MENU] },
               ];
 
-              this.players[this.activePlayer].credits += this.contextCard.cost;
+              this.players[this.me].credits += this.contextCard.cost;
 
               this.discard = this.discard.filter(
                 (card) => card.id !== this.contextCard.id
@@ -675,6 +711,7 @@ export default {
       }
 
       this.showContextMenu = false;
+      this.sync();
     },
     resolveCardOnStack() {
       // Reset step data
@@ -684,8 +721,8 @@ export default {
       }
 
       if (this.contextCard.type === TECHNOLOGY) {
-        this.players[this.activePlayer].technology = [
-          ...this.players[this.activePlayer].technology,
+        this.players[this.me].technology = [
+          ...this.players[this.me].technology,
           this.contextCard,
         ];
       } else {
@@ -702,6 +739,7 @@ export default {
 
       // Destroy any dead ships
       this.cleanUpDestroyedShips();
+      this.sync();
     },
     assignCombatDamage(attackingCard, targetId) {
       Vue.set(attackingCard, "damageAssignedTo", targetId);
@@ -745,6 +783,7 @@ export default {
       });
 
       this.cleanUpDestroyedShips();
+      this.sync();
     },
     cleanUpDestroyedShips() {
       this.systems.forEach((system) => {
@@ -764,11 +803,11 @@ export default {
       // Conquest
       this.systems.forEach((system) => {
         if (
-          system.card.controlledBy === this.nonActivePlayer &&
-          system[this.activePlayer].length > 0 &&
-          system[this.nonActivePlayer].length === 0
+          system.card.controlledBy === this.notMe &&
+          system[this.me].length > 0 &&
+          system[this.notMe].length === 0
         ) {
-          system.card.controlledBy = this.activePlayer;
+          system.card.controlledBy = this.me;
           system.card.developmentLevel = 1;
         }
       });
@@ -781,7 +820,7 @@ export default {
               card,
               system,
               systems: this.systems,
-              activePlayer: this.activePlayer,
+              activePlayer: this.me,
               players: this.players,
             });
           }
@@ -792,7 +831,7 @@ export default {
               card,
               system,
               systems: this.systems,
-              activePlayer: this.activePlayer,
+              activePlayer: this.me,
               players: this.players,
             });
           }
@@ -800,8 +839,8 @@ export default {
       });
 
       // Next player
-      this.activePlayer =
-        this.activePlayer === "player1" ? "player2" : "player1";
+      this.activePlayer = this.activePlayer === PLAYER_1 ? PLAYER_2 : PLAYER_1;
+      if (this.hotseatMode) this.me = this.me === PLAYER_1 ? PLAYER_2 : PLAYER_1;
 
       // Gain credits
       this.players[
@@ -822,10 +861,7 @@ export default {
       });
 
       this.systems.forEach((system) => {
-        if (
-          system.card.controlledBy === this.activePlayer &&
-          system.card.onTurnStart
-        ) {
+        if (system.card.controlledBy === this.me && system.card.onTurnStart) {
           system.card.onTurnStart({
             card: system.card,
             system: system,
@@ -834,7 +870,7 @@ export default {
             players: this.players,
           });
         }
-        system[this.activePlayer].forEach((card) => {
+        system[this.me].forEach((card) => {
           if (card.onTurnStart) {
             card.onTurnStart({
               card: card,
@@ -870,35 +906,136 @@ export default {
           this.draw(this.activePlayer, domain);
         }
       }
+
+      this.sync();
+    },
+    createGame() {
+      console.log("Creating a game");
+      if (this.hotseatMode) {
+        console.log("Entering hotseat mode, game state will not sync")
+      }
+      this.me = "player1";
+
+      this.decks.politics = this.shuffle(DECK_POLITICS);
+      this.decks.industry = this.shuffle(DECK_INDUSTRY);
+      this.decks.science = this.shuffle(DECK_SCIENCE);
+      this.decks.system = this.shuffle(DECK_SYSTEM);
+
+      const systems = [];
+      for (let i = 0; i < 16; i++) {
+        systems.push({
+          card:
+            i === 0 || i === 15
+              ? {
+                  ...HOMEWORLD,
+                  loc: i,
+                  controlledBy: i === 0 ? PLAYER_2 : PLAYER_1,
+                  explored: false,
+                }
+              : { ...this.decks.system.pop(), loc: i, controlledBy: null },
+          player1: [],
+          player2: [],
+        });
+      }
+
+      systems[0].player2.push({ ...SCOUT, id: this.getNextId() });
+      systems[0].card.explored = true;
+      systems[15].player1.push({ ...SCOUT, id: this.getNextId() });
+      systems[15].card.explored = true;
+
+      this.systems = systems;
+      this.showBoard = true;
+
+      this.players.player1.credits++;
+
+      this.sync();
+    },
+    sync() {
+      if (this.$store.state.gameId) {
+        console.log("Syncing up");
+        this.$socket.emit("sync", {
+          id: this.$store.state.gameId,
+          state: {
+            showCombat: this.showCombat,
+            combatSystemLoc: this.combatSystemLoc,
+            players: this.players,
+            activePlayer: this.activePlayer,
+            systems: this.systems,
+            discard: this.discard,
+            stack: this.stack,
+            decks: this.decks,
+            dieValue: this.dieValue,
+            nextId: this.nextId,
+          },
+        });
+      }
+    },
+    shuffle(cards) {
+      let deck = [...cards];
+      let i = 0;
+      let j = 0;
+      let temp = null;
+      for (i = deck.length - 1; i > 0; i--) {
+        j = Math.floor(Math.random() * (i + 1));
+        temp = deck[i];
+        deck[i] = deck[j];
+        deck[j] = temp;
+      }
+      return deck;
     },
   },
   mounted() {
-    const systems = [];
-    for (let i = 0; i < 16; i++) {
-      systems.push({
-        card:
-          i === 0 || i === 15
-            ? {
-                ...HOMEWORLD,
-                loc: i,
-                controlledBy: i === 0 ? "player2" : "player1",
-                explored: false,
-              }
-            : { ...this.decks.system.draw(), loc: i, controlledBy: null },
-        player1: [],
-        player2: [],
-      });
-    }
+    this.$socket.on("sync", (state) => {
+      if (this.$store.state.gameId) {
+        console.log("Syncing Down");
+        if (!state) {
+          return this.createGame();
+        }
+        this.nextId = state.nextId;
+        this.showCombat = state.showCombat;
+        this.combatSystemLoc = state.combatSystemLoc;
+        this.players = {
+          player1: {
+            credits: state.players.player1.credits,
+            hand: state.players.player1.hand.map((card) => ({
+              ...mapCard(card),
+              contextMenu: [...HAND_CONTEXT_MENU],
+            })),
+            technology: state.players.player1.technology.map(mapCard),
+          },
+          player2: {
+            credits: state.players.player2.credits,
+            hand: state.players.player2.hand.map((card) => ({
+              ...mapCard(card),
+              contextMenu: [...HAND_CONTEXT_MENU],
+            })),
+            technology: state.players.player2.technology.map(mapCard),
+          },
+        };
+        this.activePlayer = state.activePlayer;
+        this.systems = state.systems.map((system) => ({
+          card: mapCard(system.card),
+          player1: system.player1.map(mapCard),
+          player2: system.player2.map(mapCard),
+        }));
+        this.discard = state.discard.map((card) => ({
+          ...mapCard(card),
+          contextMenu: [...DISCARD_CONTEXT_MENU],
+        }));
+        this.stack = state.stack.map(mapCard);
+        this.decks = {
+          politics: state.decks.politics.map(mapCard),
+          science: state.decks.science.map(mapCard),
+          industry: state.decks.industry.map(mapCard),
+          system: state.decks.system.map(mapCard),
+        };
+        this.dieValue = state.dieValue;
+      } else {
+        this.createGame();
+      }
+    });
 
-    systems[0].player2.push({ ...SCOUT, id: this.getNextId() });
-    systems[0].card.explored = true;
-    systems[15].player1.push({ ...SCOUT, id: this.getNextId() });
-    systems[15].card.explored = true;
-
-    this.systems = systems;
-    this.showBoard = true;
-
-    this.players.player1.credits++;
+    this.$socket.emit("entered", this.$store.state.gameId);
 
     EventBus.$on("card:hover", (card) => {
       if (!this.showDiscard) this.hoveredCard = card;

@@ -9,12 +9,13 @@
       :group="`player2-${group}`"
       :loc="system.card.loc"
       :combat="combat"
+      @end="$emit('move:ship')"
     />
     <div class="relative">
       <Card
         :class="combat ? 'horizontal-lg' : 'horizontal'"
-        :card="system.card.explored ? system.card : undefined"
-        x:card="system.card"
+        x:card="system.card.explored ? system.card : undefined"
+        :card="system.card"
       />
       <div v-if="system.card.developmentLevel > 0" class="development-die">
         <font-awesome size="2x" :icon="['fa', dice]" :class="dieColor" />
@@ -23,11 +24,12 @@
     <DropZone
       class="dropzone bottom"
       x:cardClass="player1.length > 5 ? 'xs' : 'sm'"
-      :cardClass="combat ? player1.length > 5 ? 'sm' : '' : 'xs'"
+      :cardClass="combat ? (player1.length > 5 ? 'sm' : '') : 'xs'"
       :list.sync="player1"
       :group="`player1-${group}`"
       :loc="system.card.loc"
       :combat="combat"
+      @end="$emit('move:ship')"
     />
   </div>
 </template>
@@ -96,6 +98,13 @@ export default {
     dieColor() {
       if (this.system.card.controlledBy === "player1") return "text-red-400";
       else return "text-blue-400";
+    },
+  },
+  methods: {
+    moveNoted() {
+      console.log("A move was noted.");
+      this.$emit("move:ship");
+      return true;
     },
   },
   watch: {
