@@ -1,12 +1,20 @@
 <template>
   <div id="app">
-    <!-- <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div> -->
-    <router-view/>
+    <Game />
   </div>
 </template>
+
+<script>
+// @ is an alias to /src
+import Game from "@/components/Game.vue";
+
+export default {
+  name: "Home",
+  components: {
+    Game,
+  },
+};
+</script>
 
 <style>
 #app {

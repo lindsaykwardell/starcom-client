@@ -79,7 +79,7 @@
       </div>
     </div>
     <div class="flex-grow bg-black h-screen">
-      <div v-if="shouldBoardDisplay" class="board relative">
+      <div v-if="shouldBoardDisplay" class="board relative overflow-y-scroll">
         <template v-if="!showCombat">
           <div class="flex justify-around mt-6">
             <System
@@ -922,7 +922,7 @@ export default {
 };
 </script>
 
-<style lang="postcss" scoped>
+<style lang="pcss" scoped>
 .board {
   padding: 1rem;
   background: linear-gradient(
@@ -931,7 +931,7 @@ export default {
     rgb(18, 18, 59)
   );
   height: calc(100vh - 175px);
-  overflow: hidden;
+  overflow: scroll;
 }
 
 .board-height {
@@ -967,8 +967,8 @@ export default {
 }
 
 .next-turn-button {
-  @apply absolute p-3 bg-green-900 rounded-lg shadow-md text-white duration-200;
-  bottom: 10px;
+  @apply fixed p-3 bg-green-900 rounded-lg shadow-md text-white duration-200;
+  bottom: 185px;
   right: 10px;
 
   &:hover {
@@ -977,13 +977,13 @@ export default {
 }
 
 .active-player-stats {
-  @apply absolute text-white text-left;
-  bottom: 10px;
-  left: 10px;
+  @apply fixed text-white text-left;
+  bottom: 185px;
+  left: 310px;
 }
 
 .d20 {
-  @apply absolute bg-white p-2 rounded-full;
+  @apply fixed bg-white p-2 rounded-full;
   top: 20px;
   right: 20px;
 
