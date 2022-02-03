@@ -1,12 +1,15 @@
 <template>
   <div id="app">
     <Game />
+    I'm rendering, ma!
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
 import Game from "@/components/Game.vue";
+
+console.log(Game);
 
 export default {
   name: "Home",

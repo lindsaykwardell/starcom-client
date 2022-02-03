@@ -24,7 +24,7 @@
             </button>
           </div>
 
-          <Dialog :show="showDiscard" @toggle="toggleDiscard">
+          <!-- <Dialog :show="showDiscard" @toggle="toggleDiscard">
             <template v-slot:button
               ><h6 class="text-white">
                 Discard ({{ discard.length }})
@@ -40,9 +40,9 @@
               :card="card"
               class="inline lg"
             />
-          </Dialog>
+          </Dialog> -->
           <Card :card="discard[0]" class="m-auto" />
-          <Dialog :show="showStack" @toggle="toggleStack">
+          <!-- <Dialog :show="showStack" @toggle="toggleStack">
             <template v-slot:button
               ><h4 class="text-white">
                 Current Actions ({{ stack.length }})
@@ -56,7 +56,7 @@
               :card="card"
               class="inline lg"
             />
-          </Dialog>
+          </Dialog> -->
           <Card :card="stack[0]" class="md m-auto" loc="stack" />
         </div>
         <div class="flex-shrink relative">
@@ -224,10 +224,7 @@
         </div>
       </div>
       <div class="hand" v-if="shouldBoardDisplay">
-        <DropZone
-          :list.sync="showTechnology ? technology : hand"
-          group="hand"
-        />
+        <DropZone :list.sync="currentHandDisplay" group="hand" />
       </div>
     </div>
     <div
@@ -262,7 +259,7 @@ import DropZone from "@/components/DropZone/DropZone";
 import System from "@/components/System/System";
 import Card from "@/components/Card/Card";
 import DamageDice from "@/components/Dice/DamageDice";
-import Dialog from "@/components/Dialog/Dialog";
+// import Dialog from "@/components/Dialog/Dialog";
 import { clickout } from "vuetensils/src/directives";
 import Vue from "vue";
 
@@ -290,8 +287,8 @@ import Deck from "@/models/Deck";
 import EventBus from "@/util/EventBus";
 
 export default {
-  name: "two-lists",
-  display: "Two Lists",
+  name: "Game",
+  display: "Game",
   order: 1,
   data() {
     return {
@@ -342,6 +339,9 @@ export default {
   computed: {
     shouldBoardDisplay() {
       return this.showBoard && !this.showDiscard && !this.showStack;
+    },
+    currentHandDisplay() {
+      return this.showTechnology ? this.technology : this.hand;
     },
     activePlayerDevelopmentCount() {
       return this.systems
@@ -408,7 +408,7 @@ export default {
             card: this.contextCard,
             activePlayer: this.activePlayer,
             players: this.players,
-            systems: this.systems
+            systems: this.systems,
           }),
         ];
       }
@@ -538,9 +538,9 @@ export default {
               { ...card, id: this.getNextId() },
             ];
             if (option.cost) {
-              this.players[this.activePlayer].credits -= option.cost
+              this.players[this.activePlayer].credits -= option.cost;
             } else {
-              this.players[this.activePlayer].credits -= card.cost
+              this.players[this.activePlayer].credits -= card.cost;
             }
           }
           break;
@@ -576,7 +576,7 @@ export default {
           this.contextCard.damage =
             this.contextCard.damage - parseInt(keys[1], 10);
 
-            this.players[this.activePlayer].credits -= 2
+          this.players[this.activePlayer].credits -= 2;
           break;
         case "destroy":
           this.destroy(this.contextCard);
@@ -914,7 +914,7 @@ export default {
     System,
     Card,
     DamageDice,
-    Dialog,
+    // Dialog,
   },
   directives: {
     clickout,
@@ -930,7 +930,7 @@ export default {
     rgb(24, 18, 36),
     rgb(18, 18, 59)
   );
-  height: calc(100vh - 175px);
+  height: calc(100vh - 245px);
   overflow: scroll;
 }
 

@@ -1,30 +1,37 @@
 <template>
   <draggable
-    v-model="_list"
+    :list="_list"
     :group="group"
     ghost-class="ghost"
     chosen-class="chosen"
     drag-class="drag"
+    item-key="id"
+    class="flex justify-center"
   >
-    <div
-      role="card-list"
-      class="list-group-item"
-      v-for="element in list"
-      :key="element.id"
-    >
-      &nbsp;
-      <div class="relative">
-        <Card :class="cardClass" :card="element" :loc="loc" :combat="combat" />
-        <DamageDice v-if="element.damage" :damage="element.damage" :showNumber="cardClass.includes('xs')" />
+    <template #item="item">
+      <div>
+        <div class="relative">
+          <Card
+            :class="cardClass"
+            :card="item?.element"
+            :loc="loc"
+            :combat="combat"
+          />
+          <DamageDice
+            v-if="item?.element.damage"
+            :damage="item?.element.damage"
+            :showNumber="cardClass.includes('xs')"
+          />
+        </div>
       </div>
-    </div>
+    </template>
   </draggable>
 </template>
 
 <script>
 import draggable from "vuedraggable";
-import Card from '@/components/Card/Card'
-import DamageDice from '@/components/Dice/DamageDice'
+import Card from "@/components/Card/Card";
+import DamageDice from "@/components/Dice/DamageDice";
 
 export default {
   name: "dropzone",
@@ -32,39 +39,39 @@ export default {
   props: {
     list: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     group: {
       type: String,
-      default: "default"
+      default: "default",
     },
     cardClass: {
       type: String,
-      default: ""
+      default: "",
     },
     loc: {
       type: Number,
-      default: 0
+      default: 0,
     },
     combat: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   computed: {
     _list: {
       get() {
-        return this.list
+        return this.list;
       },
       set(list) {
-        this.$emit("update:list", list)
-      }
-    }
+        this.$emit("update:list", list);
+      },
+    },
   },
   components: {
     draggable,
     Card,
-    DamageDice
+    DamageDice,
   },
 };
 </script>
