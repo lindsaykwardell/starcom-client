@@ -229,7 +229,7 @@
     </div>
     <div
       v-if="showContextMenu && contextCard"
-      v-clickout="onClickout"
+      xv-clickout="onClickout"
       class="context-menu"
       :style="contextCoordinates"
     >
@@ -260,7 +260,7 @@ import System from "@/components/System/System";
 import Card from "@/components/Card/Card";
 import DamageDice from "@/components/Dice/DamageDice";
 // import Dialog from "@/components/Dialog/Dialog";
-import { clickout } from "vuetensils/src/directives";
+// import { clickout } from "vuetensils/src/directives";
 import Vue from "vue";
 
 import {
@@ -916,9 +916,9 @@ export default {
     DamageDice,
     // Dialog,
   },
-  directives: {
-    clickout,
-  },
+  // directives: {
+  //   clickout,
+  // },
 };
 </script>
 

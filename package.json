@@ -20,8 +20,7 @@
     "tailwindcss": "^1.4.4",
     "tiny-emitter": "^2.1.0",
     "vue": "^3.2.29",
-    "vuedraggable": "^4.1.0",
-    "vuetensils": "^0.6.3"
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.15",
